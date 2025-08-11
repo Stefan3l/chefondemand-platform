@@ -1,20 +1,23 @@
-# Node
-node_modules
-npm-debug.log*
-.yarn/cache
-.pnpm-store
+# deps
+/node_modules/
+/client/node_modules/
+/server/node_modules/
 
-# Builds
-**/dist
-**/.next
-**/.turbo
-**/out
+# build
+/server/dist/
+/client/.next/
+/.next/
+/out/
+/coverage/
 
-# Env
-**/.env
-**/.env.local
-**/.env.production
-**/.env.development
+# env
+.env
+.env.*
 
-# Misc
+# prisma generated
+/server/src/generated/prisma/
+
+# logs & editors
+*.log
+.vscode/
 .DS_Store
