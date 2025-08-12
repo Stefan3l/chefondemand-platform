@@ -1,15 +1,23 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Chef {
+  id           String   @id @default(cuid())
+  firstName    String   @db.VarChar(60) // Chef's first name
+  lastName     String   @db.VarChar(60) // Chef's last name
+  countryCode  String   @db.Char(2) // ISO code, e.g. "IT", "BE"
+  phonePrefix  String   @db.VarChar(8) // e.g. "+39"
+  phoneNumber  String   @db.VarChar(20) // local number without prefix
+  email        String   @unique @db.VarChar(255) // unique login email
+  passwordHash String // bcrypt hash (never store plain)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([phonePrefix, phoneNumber], name: "unique_phone")
 }
