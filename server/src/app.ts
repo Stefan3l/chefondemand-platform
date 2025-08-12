@@ -6,6 +6,9 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
+// import routes
+import chefsRoutes from "./routes/chefs";
+
 import healthRoutes from "./routes/health";
 import inquiriesRoutes from "./routes/inquiries";
 
@@ -15,7 +18,6 @@ import { errorHandler } from "./middleware/errorHandler";
 
 dotenv.config();
 const env = loadEnv();
-
 const app = express();
 
 /* -------- Security & performance middlewares -------- */
@@ -28,6 +30,9 @@ app.use(
 );
 app.use(compression()); // Compresses response bodies for better performance
 app.use(express.json({ limit: "1mb" })); // Parse incoming JSON requests with body limit
+
+// Route for chef registration
+app.use("/api", chefsRoutes);
 
 // Rate limiter to prevent abuse and brute-force attacks
 app.use(
