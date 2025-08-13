@@ -15,3 +15,9 @@ export {
   headingVariants,
   type HeadingProps,
 } from './typography/Heading';
+
+export {
+  default as Paragraph,
+  paragraphVariants,
+  type ParagraphProps,
+} from './typography/Paragraph';
