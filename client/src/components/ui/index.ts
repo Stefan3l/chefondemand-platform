@@ -21,3 +21,11 @@ export {
   paragraphVariants,
   type ParagraphProps,
 } from './typography/Paragraph';
+
+export { default as Grid, gridVariants, type GridProps } from './grid/Grid';
+
+export {
+  default as GridColumn,
+  gridColumnVariants,
+  type GridColumnProps,
+} from './grid/GridColumn';
