@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslation } from "@/utils/useTranslation";
-import { Button, Container } from "@/components/ui";
+import { Button, Container, Heading } from "@/components/ui";
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 
@@ -12,7 +12,9 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-black">
         <Container size="xl">
-      <h1>{t('title')}</h1>
+            <div className="text-center pt-10">
+      <Heading level="h1" color="gold">{t('title')}</Heading>
+      </div>
       <p>{t('description')}</p>
       <div className="mt-20 flex gap-8 justify-between">
         <Button

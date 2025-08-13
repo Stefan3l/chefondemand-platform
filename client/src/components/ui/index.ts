@@ -9,3 +9,9 @@ export {
   containerVariants,
   type ContainerProps,
 } from './container/Container';
+
+export {
+  default as Heading,
+  headingVariants,
+  type HeadingProps,
+} from './typography/Heading';
