@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslation } from "@/utils/useTranslation";
-import Button from "@/components/ui/buttons/container/grid/typography/Buttons";
+import { Button, Container } from "@/components/ui";
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+
 
 
 export default function HomePage() {
@@ -10,9 +11,10 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-black">
+        <Container size="xl">
       <h1>{t('title')}</h1>
       <p>{t('description')}</p>
-      <div className="mt-20 flex gap-8 justify-center ">
+      <div className="mt-20 flex gap-8 justify-between">
         <Button
           variant="secondary"
           size="md"
@@ -29,6 +31,7 @@ export default function HomePage() {
           Next
         </Button>
       </div>
+      </Container>
     </main>
   );
 }

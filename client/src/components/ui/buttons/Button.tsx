@@ -4,20 +4,21 @@ import * as React from 'react';
 import Link from 'next/link';
 import { tv, type VariantProps } from 'tailwind-variants';
 
-const buttonStyles = tv({
+const buttonVariants = tv({
   base: [
     'inline-flex items-center rounded-full cursor-pointer select-none',
-    'transition-transform duration-100 hover:-translate-y-0.5',
+    'transition-transform duration-100 hover:-translate-y-0.5', // ≈ -2px
     'disabled:opacity-60 disabled:cursor-not-allowed'
   ].join(' '),
   variants: {
     variant: {
-      primary:
-        'bg-[#C7AE6A] text-black font-semibold hover:bg-[#B29A59] hover:shadow-[0_8px_25px_rgba(199,174,106,0.5)]',
+      primary: [
+        'bg-[#C7AE6A] text-black font-semibold hover:bg-[#B29A59]',
+        'hover:shadow-[0_8px_25px_rgba(199,174,106,0.5)]' // box-shadow custom la hover
+      ].join(' '),
       secondary:
         'bg-[#171717] text-gray-300 border-2 border-[#28261F] hover:border-[#C7AE6A] hover:text-[#C7AE6A]',
-      ghost:
-        'bg-transparent text-gray-200 hover:bg-white/5'
+      ghost: 'bg-transparent text-gray-200 hover:bg-white/5'
     },
     size: {
       sm: 'text-sm px-4 py-2',
@@ -36,8 +37,10 @@ const buttonStyles = tv({
   }
 });
 
+export { buttonVariants };
+
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonStyles> & {
+  VariantProps<typeof buttonVariants> & {
     /** Link: dacă este setat, randează <Link> în loc de <button> */
     href?: string;
     /** Icon stânga (ex: <ArrowLeft size={16} />) */
@@ -59,7 +62,7 @@ export function Button({
   children,
   ...rest
 }: ButtonProps) {
-  const cls = buttonStyles({ variant, size, fullWidth, class: className });
+  const cls = buttonVariants({ variant, size, fullWidth, class: className });
 
   const content = (
     <>
