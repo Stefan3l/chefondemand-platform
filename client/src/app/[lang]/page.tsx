@@ -3,6 +3,7 @@
 import { useTranslation } from "@/utils/useTranslation";
 import { Button, Container, Heading, Paragraph } from "@/components/ui";
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ThemeToggle } from "@/components/ui/buttons/Theme-toggle";
 
 
 
@@ -10,13 +11,16 @@ export default function HomePage() {
   const { t } = useTranslation('common');
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen ">
         <Container size="xl">
             <div className="text-center pt-10">
       <Heading level="h1" color="gold">{t('title')}</Heading>
       </div>
       <div className="mt-4">
-      <Paragraph color="white" weight="medium" align="center">{t('description')}</Paragraph>
+      <Paragraph color="auto" weight="medium" align="center">{t('description')}</Paragraph>
+      </div>
+      <div className="mt-8 flex justify-center">
+        <ThemeToggle />
       </div>
       <div className="mt-20 flex gap-8 justify-between">
         <Button
