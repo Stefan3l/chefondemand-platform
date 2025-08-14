@@ -1,0 +1,50 @@
+{
+  "title": "Become a chef",
+  "subtitle": "Join us today",
+
+  "fields": {
+    "name": { "label": "Name *", "placeholder": "Your name" },
+    "surname": { "label": "Surname *", "placeholder": "Your surname" },
+    "phone": {
+      "label": "Phone *",
+      "prefix": "Prefix",
+      "country": "Country",
+      "numberPlaceholder": "Your phone number"
+    },
+    "email": { "label": "Email *", "placeholder": "name@example.com" },
+    "emailConfirm": { "label": "Confirm your email *", "placeholder": "name@example.com" },
+    "password": { "label": "Password *", "placeholder": "Min. 6 characters" }
+  },
+
+  "terms": {
+    "prefix": "I accept the",
+    "connector": "as well as the",
+    "terms": "terms and conditions",
+    "privacy": "privacy policy",
+    "rich": "I accept the <terms>terms and conditions</terms> as well as the <privacy>privacy policy</privacy>."
+  },
+
+  "actions": {
+    "register": "Register",
+    "close": "Close",
+    "changeCountry": "Change country"
+  },
+
+  "messages": {
+    "successTitle": "Registration successful",
+    "successBody": "Welcome aboard! We sent a confirmation email to {{email}}.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "We couldn't complete your registration. Please try again."
+  },
+
+  "errors": {
+    "required": "This field is required.",
+    "nameTooShort": "Please enter your full name.",
+    "surnameTooShort": "Please enter your full surname.",
+    "emailInvalid": "Enter a valid email address.",
+    "emailsDontMatch": "Email addresses don't match.",
+    "passwordTooShort": "Password must be at least 6 characters.",
+    "phoneInvalid": "Enter a valid phone number.",
+    "termsRequired": "You must accept the terms to continue."
+  }
+}

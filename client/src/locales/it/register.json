@@ -1,0 +1,50 @@
+{
+  "title": "Diventa Chef",
+  "subtitle": "Unisciti a noi oggi",
+
+  "fields": {
+    "name": { "label": "Nome *", "placeholder": "Il tuo nome" },
+    "surname": { "label": "Cognome *", "placeholder": "Il tuo cognome" },
+    "phone": {
+      "label": "Telefono *",
+      "prefix": "Prefisso",
+      "country": "Paese",
+      "numberPlaceholder": "Il tuo numero di telefono"
+    },
+    "email": { "label": "Email *", "placeholder": "nome@example.com" },
+    "emailConfirm": { "label": "Conferma email *", "placeholder": "nome@example.com" },
+    "password": { "label": "Password *", "placeholder": "Min. 6 caratteri" }
+  },
+
+  "terms": {
+    "prefix": "Accetto i",
+    "connector": "e l'",
+    "terms": "termini e condizioni",
+    "privacy": "informativa sulla privacy",
+    "rich": "Accetto i <terms>termini e condizioni</terms> e l'<privacy>informativa sulla privacy</privacy>."
+  },
+
+  "actions": {
+    "register": "Registrati",
+    "close": "Chiudi",
+    "changeCountry": "Cambia paese"
+  },
+
+  "messages": {
+    "successTitle": "Registrazione completata",
+    "successBody": "Benvenuto! Ti abbiamo inviato un'email di conferma a {{email}}.",
+    "errorTitle": "Qualcosa è andato storto",
+    "errorBody": "Non siamo riusciti a completare la registrazione. Riprova."
+  },
+
+  "errors": {
+    "required": "Campo obbligatorio.",
+    "nameTooShort": "Inserisci il tuo nome completo.",
+    "surnameTooShort": "Inserisci il tuo cognome completo.",
+    "emailInvalid": "Inserisci un indirizzo email valido.",
+    "emailsDontMatch": "Le email non coincidono.",
+    "passwordTooShort": "La password deve avere almeno 6 caratteri.",
+    "phoneInvalid": "Inserisci un numero di telefono valido.",
+    "termsRequired": "Devi accettare i termini per continuare."
+  }
+}
