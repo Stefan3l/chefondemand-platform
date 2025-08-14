@@ -26,15 +26,20 @@
 
   "actions": {
     "register": "Register",
+    "submitting": "Sending…",
     "close": "Close",
-    "changeCountry": "Change country"
+    "changeCountry": "Change country",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
 
   "messages": {
     "successTitle": "Registration successful",
-    "successBody": "Welcome aboard! We sent a confirmation email to {{email}}.",
+    "successBody": "Welcome aboard! We sent a confirmation email to",
+    "successFollowUp": "You can close this window. We’ll be in touch soon.",
     "errorTitle": "Something went wrong",
-    "errorBody": "We couldn't complete your registration. Please try again."
+    "errorBody": "We couldn't complete your registration. Please try again.",
+    "checkingEmail": "Checking email…"
   },
 
   "errors": {
@@ -43,6 +48,7 @@
     "surnameTooShort": "Please enter your full surname.",
     "emailInvalid": "Enter a valid email address.",
     "emailsDontMatch": "Email addresses don't match.",
+    "emailExists": "This email is already registered.",
     "passwordTooShort": "Password must be at least 6 characters.",
     "phoneInvalid": "Enter a valid phone number.",
     "termsRequired": "You must accept the terms to continue."
