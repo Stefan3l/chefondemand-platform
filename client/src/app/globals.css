@@ -1,5 +1,24 @@
+/* =======================
+   Tailwind base & setup
+   ======================= */
 @import 'tailwindcss';
 
+/* Activează varianta dark pentru toate elementele */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Scheme de culoare implicite */
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+
+
+/* =======================
+   Fonts & Theme tokens
+   ======================= */
 @theme {
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI,
                Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
