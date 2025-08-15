@@ -6,6 +6,8 @@ import itRegister from '@/locales/it/register.json';
 import enRegister from '@/locales/en/register.json';
 import itLogin from '@/locales/it/login.json';
 import enLogin from '@/locales/en/login.json';
+import itDashboard from '@/locales/it/dashboard.json';
+import enDashboard from '@/locales/en/dashboard.json';
 
 export type NamespaceData = Record<string, string>;
 
@@ -13,12 +15,14 @@ export const translations = {
   it: {
     common: itCommon,
     register: itRegister,
-    login: itLogin
+    login: itLogin,
+    dashboard: itDashboard
   },
   en: {
     common: enCommon,
     register: enRegister,
-    login: enLogin
+    login: enLogin,
+    dashboard: enDashboard
   },
 } as const;
 

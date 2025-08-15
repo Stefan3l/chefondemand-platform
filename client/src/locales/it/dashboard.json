@@ -1,0 +1,50 @@
+{
+  "brand": "Chef on Demand",
+  "nav": {
+    "dashboard": "Dashboard",
+    "requests": "Richieste",
+    "messages": "Messaggi",
+    "calendar": "Calendario",
+    "profile": "Il Mio Profilo",
+    "menus": "I tuoi menù e piatti",
+    "menu": "Menù",
+    "dishes": "Piatti",
+    "settings": "Impostazioni",
+    "help": "Aiuto & Supporto",
+    "logout": "Logout",
+    "home": "Inizio",
+    "more": "Di più"
+  },
+  "header": {
+    "welcome": "Benvenuto,",
+    "searchPlaceholder": "Cerca richieste, clienti...",
+    "banner": "Ecco un riepilogo della tua attività su Chef on Demand"
+  },
+  "profile": {
+    "title": "Completa il tuo Profilo",
+    "subtitle": "Aumenta le tue possibilità di essere scelto",
+    "button": "Completa Profilo",
+    "steps": {
+      "photo": "Foto profilo",
+      "menu": "Menu specialità",
+      "certs": "Carica certificazioni",
+      "payments": "Pagamenti"
+    }
+  },
+  "stats": {
+    "title": "LE TUE STATISTICHE",
+    "available": "Richieste disponibili",
+    "received": "Richieste ricevute",
+    "sent": "Proposte inviate",
+    "closed": "Proposte chiuse"
+  },
+  "revenue": {
+    "title": "Reddito"
+  },
+  "bookings": {
+    "title": "Prenotazioni Recenti",
+    "viewAll": "Vedi tutte",
+    "emptyTitle": "Nessuna prenotazione recente",
+    "emptySubtitle": "Le nuove prenotazioni appariranno qui."
+  }
+}
