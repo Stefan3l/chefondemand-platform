@@ -1,0 +1,20 @@
+{
+  "title": "Accedi come Chef",
+  "close": "Chiudi",
+  "email_label": "Email",
+  "email_placeholder": "nome@esempio.com",
+  "password_label": "Password",
+  "password_placeholder": "Inserisci la tua password",
+  "remember": "Ricordami su questo dispositivo",
+  "cancel": "Annulla",
+  "submit": "Accedi",
+  "submitting": "Accesso in corso…",
+  "success": "Accesso effettuato con successo.",
+  "errors": {
+    "required_email": "Inserisci il tuo indirizzo email.",
+    "invalid_email": "Inserisci un indirizzo email valido.",
+    "required_password": "Inserisci la tua password.",
+    "invalid_credentials": "Email o password non validi.",
+    "server_error": "Errore imprevisto. Riprova più tardi."
+  }
+}

@@ -5,9 +5,11 @@ import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 // import routes
 import chefsRoutes from "./routes/chefs";
+import authRoutes from "./routes/auth.routes";
 
 import healthRoutes from "./routes/health";
 import inquiriesRoutes from "./routes/inquiries";
@@ -22,6 +24,7 @@ const app = express();
 
 /* -------- Security & performance middlewares -------- */
 app.use(helmet()); // Sets various HTTP headers for app security
+app.use(cookieParser()); // Parses cookies from the request
 app.use(
   cors({
     origin: env.CORS_ORIGIN, // Allowed origin(s) for CORS
@@ -33,6 +36,7 @@ app.use(express.json({ limit: "1mb" })); // Parse incoming JSON requests with bo
 
 // Route for chef registration
 app.use("/api", chefsRoutes);
+app.use("/api", authRoutes);
 
 // Rate limiter to prevent abuse and brute-force attacks
 app.use(
