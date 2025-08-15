@@ -25,13 +25,26 @@ import ReactCountryFlag from "react-country-flag";
 import { Heading, Paragraph } from "@/components/ui";
 import { useTranslation } from "@/utils/useTranslation";
 
-/* ---------- API config (unchanged logic) ---------- */
+/* ---------------- API config ---------------- */
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") ||
   "http://localhost:4000";
 const REG_ENDPOINT = `${API_BASE}/api/registration`;
 
-/* ---------- Inputs: same dark style as Login ---------- */
+/* ---------------- Types & helpers (no `any`) ---------------- */
+type ApiErrorData = { code?: string; message?: string };
+
+function isApiErrorData(x: unknown): x is ApiErrorData {
+  if (typeof x !== "object" || x === null) return false;
+  const maybe = x as Record<string, unknown>;
+  const okCode =
+    maybe.code === undefined || typeof maybe.code === "string";
+  const okMsg =
+    maybe.message === undefined || typeof maybe.message === "string";
+  return okCode && okMsg;
+}
+
+/* ---------------- Shared input style (dark) ---------------- */
 const inputBase =
   "w-full h-11 rounded-2xl border px-4 text-sm outline-none transition " +
   "bg-neutral-800 text-neutral-100 placeholder-neutral-500 border-neutral-700 " +
@@ -46,7 +59,7 @@ const TextInput = forwardRef<HTMLInputElement, ComponentPropsWithoutRef<"input">
 );
 TextInput.displayName = "TextInput";
 
-/* Country flag (unchanged) */
+/* ---------------- Flag component ---------------- */
 function Flag({ code }: { code: Country }) {
   return (
     <ReactCountryFlag
@@ -59,13 +72,14 @@ function Flag({ code }: { code: Country }) {
   );
 }
 
-/* ---------- Country/Prefix modal: dark to match Login ---------- */
+/* ---------------- Country/Prefix Modal (internal) ---------------- */
 type CountryPrefixModalProps = {
   open: boolean;
   onClose: () => void;
   countries: Country[];
   current: Country;
   onSelect: (c: Country) => void;
+  title: string;
 };
 
 function CountryPrefixModal({
@@ -74,8 +88,8 @@ function CountryPrefixModal({
   countries,
   current,
   onSelect,
+  title,
 }: CountryPrefixModalProps) {
-  const { t } = useTranslation("register");
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -131,26 +145,21 @@ function CountryPrefixModal({
               leaveFrom="opacity-100 scale-100 translate-y-0"
               leaveTo="opacity-0 scale-95 translate-y-1"
             >
-              <DialogPanel className="w-full max-w-xl rounded-3xl bg-neutral-900 shadow-2xl ring-1 ring-white/10 max-h-[90vh] p-4 sm:p-6 overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <DialogTitle as="div" className="sr-only">
-                    {t("actions.changeCountry")}
-                  </DialogTitle>
-                  <h2 className="text-lg font-semibold text-neutral-100">
-                    {t("actions.changeCountry")}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                    aria-label={t("actions.close")}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
+              <DialogPanel className="relative w-full max-w-xl mx-4 sm:mx-6 rounded-3xl bg-neutral-900 shadow-2xl ring-1 ring-white/10 max-h-[90vh] p-5 sm:p-6 overflow-hidden">
+                {/* Close button pinned top-right */}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
 
-                {/* Search input */}
+                <h2 className="text-lg font-semibold text-neutral-100 pr-10">
+                  {title}
+                </h2>
+
                 <div className="mt-4">
                   <input
                     className={inputBase}
@@ -160,8 +169,8 @@ function CountryPrefixModal({
                   />
                 </div>
 
-                {/* Country list */}
-                <div className="mt-3 overflow-y-auto max-h-[60vh] rounded-2xl border border-neutral-800">
+                {/* Scrollable list with hidden scrollbar */}
+                <div className="mt-3 overflow-y-auto max-h-[60vh] rounded-2xl border border-neutral-800 cod-no-scrollbar">
                   <ul className="divide-y divide-neutral-800">
                     {filtered.map((c) => {
                       const dial = getCountryCallingCode(c);
@@ -197,13 +206,13 @@ function CountryPrefixModal({
   );
 }
 
-/* ---------- Main Register modal (dark, same as Login) ---------- */
+/* ---------------- Main Register modal (dark, same as Login) ---------------- */
 type Props = { open: boolean; onClose: () => void };
 
 export default function RegisterChefModal({ open, onClose }: Props) {
   const { t } = useTranslation("register");
 
-  // Form state (unchanged logic)
+  // Form state
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
 
@@ -212,7 +221,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
   const [prefix, setPrefix] = useState<string>("39"); // without "+"
   const [localNumber, setLocalNumber] = useState<string>("");
 
-  // Email & pass
+  // Email & password
   const [email, setEmail] = useState("");
   const [email2, setEmail2] = useState("");
   const [password, setPassword] = useState("");
@@ -228,7 +237,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
   const [submitKind, setSubmitKind] = useState<"success" | "error" | "">("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Ensure Italy first
+  // Keep Italy first in list
   useEffect(() => {
     const all = (getCountries() ?? []) as Country[];
     const pinned: Country[] = ["IT"];
@@ -236,7 +245,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
     setCountries([...pinned, ...rest]);
   }, []);
 
-  // Update calling code when country changes
+  // Update calling code on country change
   useEffect(() => {
     try {
       const cc = getCountryCallingCode(country);
@@ -246,11 +255,13 @@ export default function RegisterChefModal({ open, onClose }: Props) {
     }
   }, [country]);
 
+  // Normalized local phone number (digits only)
   const phoneNumber = useMemo<string>(
     () => localNumber.replace(/[^\d]/g, ""),
     [localNumber]
   );
 
+  // Enable submit only when valid (client-side)
   const canSubmit = useMemo(
     () =>
       name.trim() &&
@@ -265,6 +276,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
     [name, surname, phoneNumber, email, email2, password, agree, isSubmitting]
   );
 
+  // First friendly error for UX
   const firstError = (): string => {
     if (!name.trim()) return t("errors.required");
     if (!surname.trim()) return t("errors.required");
@@ -277,6 +289,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
     return t("messages.errorBody");
   };
 
+  // Reset form after success
   const resetForm = () => {
     setName("");
     setSurname("");
@@ -289,7 +302,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
     setPrefix("39");
   };
 
-  // Submit registration (unchanged logic)
+  // Submit registration
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitMsg("");
@@ -321,7 +334,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
       setSubmitKind("success");
       setSubmitMsg(`${t("messages.successBody")} ${email}`);
 
-      // Gentle close after a short delay
+      // Gentle close after a short delay so the message is visible
       window.setTimeout(() => {
         resetForm();
         onClose();
@@ -331,14 +344,17 @@ export default function RegisterChefModal({ open, onClose }: Props) {
 
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;
-        const data = err.response?.data as
-          | { code?: string; message?: string }
-          | undefined;
+        const data = err.response?.data;
 
-        if (status === 409 || data?.code === "EMAIL_EXISTS") {
-          apiMsg = t("errors.emailExists");
+        if (isApiErrorData(data)) {
+          if (status === 409 || data.code === "EMAIL_EXISTS") {
+            apiMsg = t("errors.emailExists");
+          } else {
+            apiMsg = data.message ?? err.message ?? apiMsg;
+          }
         } else {
-          apiMsg = data?.message ?? err.message ?? apiMsg;
+          // Axios error without typed body (e.g., network)
+          apiMsg = err.message ?? apiMsg;
         }
       } else if (err instanceof Error) {
         apiMsg = err.message || apiMsg;
@@ -351,319 +367,303 @@ export default function RegisterChefModal({ open, onClose }: Props) {
     }
   };
 
+  if (!open) return null;
+
   return (
-    <Transition appear show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-[100]" onClose={onClose}>
-        {/* Same overlay as Login */}
-        <TransitionChild
-          as={Fragment}
-          enter="ease-out duration-200"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-150"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-        </TransitionChild>
+    <>
+      <Transition appear show={open} as={Fragment}>
+        <Dialog as="div" className="relative z-[100]" onClose={onClose}>
+          {/* Dark overlay */}
+          <TransitionChild
+            as={Fragment}
+            enter="ease-out duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
+          </TransitionChild>
 
-        {/* Centered dark panel, identical feel to Login */}
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-            <TransitionChild
-              as={Fragment}
-              enter="ease-out duration-200"
-              enterFrom="opacity-0 scale-95 translate-y-1"
-              enterTo="opacity-100 scale-100 translate-y-0"
-              leave="ease-in duration-150"
-              leaveFrom="opacity-100 scale-100 translate-y-0"
-              leaveTo="opacity-0 scale-95 translate-y-1"
-            >
-              <DialogPanel className="relative w-full max-w-lg sm:max-w-xl rounded-3xl bg-neutral-900 shadow-2xl ring-1 ring-white/10 max-h-[90vh] overflow-y-auto p-4 sm:px-6 sm:py-10">
-                {/* Close button pinned to top-right */}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-                  aria-label={t("actions.close")}
-                >
-                  <X size={16} />
-                </button>
-
-                {/* Header (centered title & subtitle) */}
-                <div className="text-center -mt-2 mb-4 sm:mb-6">
-                  <DialogTitle as="div" className="sr-only">
-                    {t("title")}
-                  </DialogTitle>
-                  <Heading level="h3" className="text-2xl font-semibold text-[#C7AE6A]">
-                    {t("title")}
-                  </Heading>
-                  <Paragraph
-                    align="center"
-                    weight="medium"
-                    color="auto"
-                    size="base"
-                    className="mt-2 text-neutral-300"
-                  >
-                    {t("subtitle")}
-                  </Paragraph>
-                </div>
-
-                {/* Form (inputs dark like Login) */}
-                <form onSubmit={onSubmit} className="space-y-3">
-                  <div>
-                    <label htmlFor="name" className={labelBase}>
-                      {t("fields.name.label")}
-                    </label>
-                    <TextInput
-                      id="name"
-                      name="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder={t("fields.name.placeholder")}
-                      required
-                      disabled={isSubmitting}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="surname" className={labelBase}>
-                      {t("fields.surname.label")}
-                    </label>
-                    <TextInput
-                      id="surname"
-                      name="surname"
-                      value={surname}
-                      onChange={(e) => setSurname(e.target.value)}
-                      placeholder={t("fields.surname.placeholder")}
-                      required
-                      disabled={isSubmitting}
-                    />
-                  </div>
-
-                  {/* Phone group */}
-                  <div>
-                    <label className={labelBase}>{t("fields.phone.label")}</label>
-
-                    <div className="flex items-center gap-2">
-                      {/* Country picker trigger (dark) */}
-                      <button
-                        type="button"
-                        onClick={() => setOpenPrefix(true)}
-                        className="inline-flex h-11 items-center gap-2 rounded-2xl bg-neutral-800 px-3 text-neutral-100 border border-neutral-700 hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-[#C7AE6A]"
-                        aria-label={t("actions.changeCountry")}
-                        title={country}
-                        disabled={isSubmitting}
-                      >
-                        <Flag code={country} />
-                        <ChevronDown size={16} className="opacity-70" />
-                      </button>
-
-                      {/* Prefix (readonly, dark) */}
-                      <TextInput
-                        aria-label={t("fields.phone.prefix")}
-                        value={`+${prefix}`}
-                        readOnly
-                        className="min-w-[110px] cursor-pointer select-none"
-                        onClick={() => !isSubmitting && setOpenPrefix(true)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-
-                    {/* Local number */}
-                    <div className="mt-2">
-                      <TextInput
-                        aria-label={t("fields.phone.label")}
-                        inputMode="numeric"
-                        placeholder={t("fields.phone.numberPlaceholder")}
-                        value={localNumber}
-                        onChange={(e) => setLocalNumber(e.target.value)}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className={labelBase}>
-                      {t("fields.email.label")}
-                    </label>
-                    <TextInput
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder={t("fields.email.placeholder")}
-                      required
-                      disabled={isSubmitting}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email2" className={labelBase}>
-                      {t("fields.emailConfirm.label")}
-                    </label>
-                    <TextInput
-                      id="email2"
-                      name="email2"
-                      type="email"
-                      value={email2}
-                      onChange={(e) => setEmail2(e.target.value)}
-                      placeholder={t("fields.emailConfirm.placeholder")}
-                      required
-                      disabled={isSubmitting}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="password" className={labelBase}>
-                      {t("fields.password.label")}
-                    </label>
-                    <div className="relative">
-                      <TextInput
-                        id="password"
-                        name="password"
-                        type={showPass ? "text" : "password"}
-                        placeholder={t("fields.password.placeholder")}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pr-10"
-                        required
-                        minLength={6}
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPass((s) => !s)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-200"
-                        aria-label={
-                          showPass
-                            ? t("actions.hidePassword")
-                            : t("actions.showPassword")
-                        }
-                        disabled={isSubmitting}
-                      >
-                        {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Terms — same custom checkbox as Login (gold bg + black check) */}
-                  <label
-                    htmlFor="reg-terms"
-                    className="my-6 flex items-start gap-3 text-sm text-neutral-300 cursor-pointer"
-                  >
-                    {/* Native input kept for a11y; hidden visually */}
-                    <input
-                      id="reg-terms"
-                      type="checkbox"
-                      className="peer sr-only"
-                      checked={agree}
-                      onChange={(e) => setAgree(e.target.checked)}
-                      required
-                      disabled={isSubmitting}
-                    />
-                    {/* Custom box follows peer state */}
-                    <span className="relative mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded border border-neutral-600 bg-neutral-800 transition-colors peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#C7AE6A] peer-checked:bg-[#C7AE6A]">
-                      <svg
-                        viewBox="0 0 20 20"
-                        className="pointer-events-none absolute h-3.5 w-3.5 opacity-0 transition-opacity peer-checked:opacity-100"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M5 10.5l3 3 7-7"
-                          fill="none"
-                          stroke="#000000" /* black tick */
-                          strokeWidth="2.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                    <span>
-                      {t("terms.prefix")}{" "}
-                      <Link
-                        href="/terms"
-                        className="underline decoration-[#C7AE6A] underline-offset-2"
-                      >
-                        {t("terms.terms")}
-                      </Link>{" "}
-                      {t("terms.connector")}{" "}
-                      <Link
-                        href="/privacy"
-                        className="underline decoration-[#C7AE6A] underline-offset-2"
-                      >
-                        {t("terms.privacy")}
-                      </Link>
-                      .
-                    </span>
-                  </label>
-
-                  {/* Submit / Feedback (same button aesthetics as Login) */}
+          {/* Centered dark panel with hidden scrollbar */}
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+              <TransitionChild
+                as={Fragment}
+                enter="ease-out duration-200"
+                enterFrom="opacity-0 scale-95 translate-y-1"
+                enterTo="opacity-100 scale-100 translate-y-0"
+                leave="ease-in duration-150"
+                leaveFrom="opacity-100 scale-100 translate-y-0"
+                leaveTo="opacity-0 scale-95 translate-y-1"
+              >
+                <DialogPanel className="relative w-full max-w-lg sm:max-w-xl mx-4 sm:mx-6 rounded-3xl bg-neutral-900 shadow-2xl ring-1 ring-white/10 max-h-[90vh] overflow-y-auto cod-no-scrollbar p-5 sm:p-6">
+                  {/* Close button pinned to top-right */}
                   <button
-                    type="submit"
-                    disabled={!canSubmit}
-                    className={
-                      "mt-2 h-11 w-full rounded-2xl font-semibold transition inline-flex items-center justify-center gap-2 " +
-                      (canSubmit
-                        ? "bg-[#C7AE6A] text-neutral-900 hover:brightness-95"
-                        : "bg-neutral-800 text-neutral-500 cursor-not-allowed")
-                    }
+                    type="button"
+                    onClick={onClose}
+                    className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                    aria-label={t("actions.close")}
                   >
-                    {isSubmitting && (
-                      <svg
-                        className="h-4 w-4 animate-spin"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
+                    <X size={16} />
+                  </button>
+
+                  {/* Header (centered) */}
+                  <div className="text-center mb-4 sm:mb-6">
+                    <DialogTitle as="div" className="sr-only">
+                      {t("title")}
+                    </DialogTitle>
+                    <Heading
+                      level="h3"
+                      className="text-2xl font-semibold text-[#C7AE6A]"
+                    >
+                      {t("title")}
+                    </Heading>
+                    <Paragraph
+                      align="center"
+                      weight="medium"
+                      color="auto"
+                      size="base"
+                      className="mt-2 text-neutral-300"
+                    >
+                      {t("subtitle")}
+                    </Paragraph>
+                  </div>
+
+                  {/* Form */}
+                  <form onSubmit={onSubmit} className="space-y-3">
+                    <div>
+                      <label htmlFor="name" className={labelBase}>
+                        {t("fields.name.label")}
+                      </label>
+                      <TextInput
+                        id="name"
+                        name="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder={t("fields.name.placeholder")}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="surname" className={labelBase}>
+                        {t("fields.surname.label")}
+                      </label>
+                      <TextInput
+                        id="surname"
+                        name="surname"
+                        value={surname}
+                        onChange={(e) => setSurname(e.target.value)}
+                        placeholder={t("fields.surname.placeholder")}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* Phone group */}
+                    <div>
+                      <span className={labelBase}>
+                        {t("fields.phone.label")}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {/* Country picker trigger (dark) */}
+                        <button
+                          type="button"
+                          onClick={() => setOpenPrefix(true)}
+                          className="inline-flex h-11 items-center gap-2 rounded-2xl bg-neutral-800 px-3 text-neutral-100 border border-neutral-700 hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-[#C7AE6A]"
+                          aria-label={t("actions.changeCountry")}
+                          title={country}
+                          disabled={isSubmitting}
+                        >
+                          <Flag code={country} />
+                          <ChevronDown size={16} className="opacity-70" />
+                        </button>
+
+                        {/* Prefix (readonly) */}
+                        <TextInput
+                          aria-label={t("fields.phone.prefix")}
+                          value={`+${prefix}`}
+                          readOnly
+                          className="min-w-[110px] cursor-pointer select-none"
+                          onClick={() => !isSubmitting && setOpenPrefix(true)}
+                          disabled={isSubmitting}
                         />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4A4 4 0 008 12H4z"
+                      </div>
+
+                      {/* Local number */}
+                      <div className="mt-2">
+                        <TextInput
+                          aria-label={t("fields.phone.label")}
+                          inputMode="numeric"
+                          placeholder={t("fields.phone.numberPlaceholder")}
+                          value={localNumber}
+                          onChange={(e) => setLocalNumber(e.target.value)}
+                          disabled={isSubmitting}
                         />
-                      </svg>
-                    )}
-                    <span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="email" className={labelBase}>
+                        {t("fields.email.label")}
+                      </label>
+                      <TextInput
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder={t("fields.email.placeholder")}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="email2" className={labelBase}>
+                        {t("fields.emailConfirm.label")}
+                      </label>
+                      <TextInput
+                        id="email2"
+                        name="email2"
+                        type="email"
+                        value={email2}
+                        onChange={(e) => setEmail2(e.target.value)}
+                        placeholder={t("fields.emailConfirm.placeholder")}
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="password" className={labelBase}>
+                        {t("fields.password.label")}
+                      </label>
+                      <div className="relative">
+                        <TextInput
+                          id="password"
+                          name="password"
+                          type={showPass ? "text" : "password"}
+                          placeholder={t("fields.password.placeholder")}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pr-10"
+                          required
+                          minLength={6}
+                          disabled={isSubmitting}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPass((s) => !s)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-200"
+                          aria-label={
+                            showPass
+                              ? t("actions.hidePassword")
+                              : t("actions.showPassword")
+                          }
+                          disabled={isSubmitting}
+                        >
+                          {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Terms — gold bg + black check when selected */}
+                    <label
+                      htmlFor="reg-terms"
+                      className="my-6 flex items-start gap-3 text-sm text-neutral-300 cursor-pointer"
+                    >
+                      {/* Accessible native input (visually hidden) */}
+                      <input
+                        id="reg-terms"
+                        type="checkbox"
+                        className="peer sr-only"
+                        checked={agree}
+                        onChange={(e) => setAgree(e.target.checked)}
+                        required
+                        disabled={isSubmitting}
+                      />
+                      {/* Custom box linked to peer state */}
+                      <span className="relative mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded border border-neutral-600 bg-neutral-800 transition-colors peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#C7AE6A] peer-checked:bg-[#C7AE6A]">
+                        <svg
+                          viewBox="0 0 20 20"
+                          className="pointer-events-none absolute h-3.5 w-3.5 opacity-0 transition-opacity peer-checked:opacity-100"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M5 10.5l3 3 7-7"
+                            fill="none"
+                            stroke="#000000"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      <span>
+                        {t("terms.prefix")}{" "}
+                        <Link
+                          href="/terms"
+                          className="underline decoration-[#C7AE6A] underline-offset-2"
+                        >
+                          {t("terms.terms")}
+                        </Link>{" "}
+                        {t("terms.connector")}{" "}
+                        <Link
+                          href="/privacy"
+                          className="underline decoration-[#C7AE6A] underline-offset-2"
+                        >
+                          {t("terms.privacy")}
+                        </Link>
+                        .
+                      </span>
+                    </label>
+
+                    {/* Submit + feedback */}
+                    <button
+                      type="submit"
+                      disabled={!canSubmit}
+                      className={
+                        "mt-2 h-11 w-full rounded-2xl font-semibold transition inline-flex items-center justify-center gap-2 " +
+                        (canSubmit
+                          ? "bg-[#C7AE6A] text-neutral-900 hover:brightness-95"
+                          : "bg-neutral-800 text-neutral-500 cursor-not-allowed")
+                      }
+                    >
                       {isSubmitting
                         ? t("actions.submitting")
                         : t("actions.register")}
-                    </span>
-                  </button>
+                    </button>
 
-                  {submitKind && (
-                    <p
-                      className={
-                        "mt-2 text-center text-sm " +
-                        (submitKind === "success"
-                          ? "text-emerald-400"
-                          : "text-red-400")
-                      }
-                      role="status"
-                      aria-live="polite"
-                    >
-                      {submitKind === "success"
-                        ? `${t("messages.successTitle")}: ${t(
-                            "messages.successBody"
-                          )} ${email}. ${t("messages.successFollowUp")}`
-                        : `${t("messages.errorTitle")}: ${submitMsg}`}
-                    </p>
-                  )}
-                </form>
-              </DialogPanel>
-            </TransitionChild>
+                    {submitKind && (
+                      <p
+                        className={
+                          "mt-2 text-center text-sm " +
+                          (submitKind === "success"
+                            ? "text-emerald-400"
+                            : "text-red-400")
+                        }
+                        role="status"
+                        aria-live="polite"
+                      >
+                        {submitKind === "success"
+                          ? `${t("messages.successTitle")}: ${t(
+                              "messages.successBody"
+                            )} ${email}. ${t("messages.successFollowUp")}`
+                          : `${t("messages.errorTitle")}: ${submitMsg}`}
+                      </p>
+                    )}
+                  </form>
+                </DialogPanel>
+              </TransitionChild>
+            </div>
           </div>
-        </div>
-      </Dialog>
+        </Dialog>
+      </Transition>
 
       {/* Country/prefix modal (dark) */}
       <CountryPrefixModal
@@ -672,7 +672,14 @@ export default function RegisterChefModal({ open, onClose }: Props) {
         countries={countries}
         current={country}
         onSelect={(c) => setCountry(c)}
+        title={t("actions.changeCountry")}
       />
-    </Transition>
+
+      {/* Local CSS to hide scrollbars (keeps scrolling) */}
+      <style jsx global>{`
+        .cod-no-scrollbar::-webkit-scrollbar { display: none; }
+        .cod-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+    </>
   );
 }
