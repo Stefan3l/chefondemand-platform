@@ -1,0 +1,20 @@
+{
+  "title": "Sign in as Chef",
+  "close": "Close",
+  "email_label": "Email",
+  "email_placeholder": "name@example.com",
+  "password_label": "Password",
+  "password_placeholder": "Enter your password",
+  "remember": "Remember me on this device",
+  "cancel": "Cancel",
+  "submit": "Login",
+  "submitting": "Signing in…",
+  "success": "You have successfully signed in.",
+  "errors": {
+    "required_email": "Please enter your email address.",
+    "invalid_email": "Please enter a valid email address.",
+    "required_password": "Please enter your password.",
+    "invalid_credentials": "Invalid email or password.",
+    "server_error": "Unexpected error. Please try again later."
+  }
+}
