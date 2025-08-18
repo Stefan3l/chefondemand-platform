@@ -11,9 +11,10 @@ export default function LogoDashboard() {
             before:bg-gradient-to-r before:from-transparent before:via-[#C7AE6A] before:to-transparent
             after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] lg:after:h-[3px]
             after:bg-gradient-to-r after:from-transparent after:via-[#C7AE6A] after:to-transparent
+            
           "
         >
-          <div className='flex items-center justify-center'>
+          <div className='flex items-center justify-center hover:scale-102 transform transition-transform duration-300'>
               <Image src="/logo.webp" alt="Logo" width={200} height={32} />
           </div>
         </div>

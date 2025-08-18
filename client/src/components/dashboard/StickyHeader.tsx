@@ -40,7 +40,7 @@ export default function StickyHeader({ base, firstName, t }: StickyHeaderProps) 
         <button
           type="button"
           onClick={() => setUserOpen((s) => !s)}
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#2D291F] px-6 lg:px-4 py-2 "
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#2D291F] px-6 lg:px-4 py-2 hover:border-[#C7AE6A] hover:translate-y-[-1px] transition-transform duration-300 cursor-pointer"
         >
           <div className="grid h-7 w-7 place-items-center rounded-full bg-[#C7AE6A] text-black font-semibold">
             {firstName.charAt(0).toUpperCase()}

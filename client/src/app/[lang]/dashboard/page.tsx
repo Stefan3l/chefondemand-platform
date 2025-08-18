@@ -2,7 +2,7 @@
 
 import ChefDashboardShell from '@/components/dashboard/ChefDashboardShell';
 import Link from 'next/link';
-import { CheckCircle2, Circle, ClipboardList, Inbox, Send, CheckCircle, type LucideIcon } from 'lucide-react';
+import { CheckCircle2, Circle, Inbox, Send, CheckCircle, type LucideIcon } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
 import { useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -30,7 +30,6 @@ export default function DashboardPage() {
   ];
 
   const stats: StatItem[] = [
-    { label: t('stats.available'), value: 0, icon: ClipboardList, iconBg: 'rgba(88,101,242,0.10)', iconColor: '#5865F2' },
     { label: t('stats.received'), value: 0, icon: Inbox,         iconBg: 'rgba(254,178,42,0.10)', iconColor: '#FEB22A' },
     { label: t('stats.sent'),     value: 0, icon: Send,          iconBg: 'rgba(235,69,158,0.10)', iconColor: '#EB459E' },
     { label: t('stats.closed'),   value: 0, icon: CheckCircle,   iconBg: 'rgba(34,197,94,0.10)',  iconColor: '#22C55E' },
@@ -79,14 +78,14 @@ export default function DashboardPage() {
       )}
 
       {/* Stats */}
-      <section className="mt-6">
-        <div className="mb-3 flex items-center justify-between">
+      <section className="my-8">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-md font-semibold tracking-wide text-neutral-300">{t('stats.title')}</h2>
 
           {/* Button that opens modal calendar */}
           <button
             onClick={() => setShowCalendar(true)}
-            className="cursor-pointer inline-flex items-center gap-2 rounded-lg font-semibold border border-white/10 bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:text-[#C7AE6A] hover:border-[#C7AE6A33] hover:bg-[#1E1B15]"
+            className="cursor-pointer inline-flex items-center gap-2 rounded-lg font-semibold border border-[#C7AE6A33] bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:text-[#C7AE6A] hover:border-[#C7AE6A33] hover:bg-[#1E1B15]"
           >
             {monthLabel}
             <span className="opacity-60">▼</span>
@@ -153,15 +152,15 @@ export default function DashboardPage() {
           )}
 
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-white/10 bg-neutral-900 p-4">
-              <div className="flex items-center gap-3">
-                <div className="grid h-9 w-9 place-items-center rounded-lg" style={{ background: s.iconBg, color: s.iconColor }}>
+            <div key={s.label} className="rounded-2xl border border-[#C7AE6A33] bg-neutral-900 p-4 hover:translate-y-[-2px] hover:bg-[#2D291F] hover:border-[#C7AE6A] transition-transform duration-200 ">
+              <div className="flex items-center justify-center lg:justify-start gap-3">
+                <div className="grid h-9 w-9 place-items-center rounded-full" style={{ background: s.iconBg, color: s.iconColor }}>
                   <s.icon size={18} />
                 </div>
-                <div>
-                  <div className="text-xs text-neutral-400">{s.label}</div>
+                <div className='flex items-center gap-2'> 
+                  <div className="text-md text-neutral-400 font-medium">{s.label}</div>
                   <div className="text-lg font-semibold">{s.value}</div>
                 </div>
               </div>
