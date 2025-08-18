@@ -21,11 +21,14 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
-import StickyHeader from './StickyHeader';
+
+
 
 
 //import components
 import LogoDashboard from './LogoDashboard';
+import StickyHeader from './StickyHeader';
+import WelcomeBanner from './WelcomeBanner';
 
 const GOLD = '#C7AE6A';
 
@@ -49,8 +52,9 @@ export default function ChefDashboardShell({ children, userName = 'Stefanel Miha
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
 
   const base = `/${locale}`;
-  const dateLocale = locale === 'it' ? 'it-IT' : 'en-US';
   const firstName = userName.split(' ')[0] || userName;
+
+   
 
   // Replace with real data when available
   const richiesteDisponibili = 0;
@@ -240,7 +244,7 @@ export default function ChefDashboardShell({ children, userName = 'Stefanel Miha
         {/* Sticky header */}
         <StickyHeader base={base} firstName={firstName} t={t} />
 
-
+        <WelcomeBanner firstName={firstName} />
 
         {/* Scrollable content */}
         <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">{children}</main>

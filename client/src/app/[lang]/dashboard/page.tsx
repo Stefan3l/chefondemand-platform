@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CheckCircle2, Circle, ClipboardList, Inbox, Send, CheckCircle, type LucideIcon } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
 
+
 const GOLD = '#C7AE6A';
 
 type Step = { text: string; done: boolean };
