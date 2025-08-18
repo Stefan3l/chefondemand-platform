@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
+import Image from 'next/image';
 
 const GOLD = '#C7AE6A';
 
@@ -83,13 +84,22 @@ export default function ChefDashboardShell({ children, userName = 'Giuseppe Macc
       aria-label="Sidebar"
     >
       {/* Logo header */}
-      <div className="relative border-b border-[rgba(199,174,106,0.2)] bg-gradient-to-br from-neutral-900/90 to-neutral-800/80 px-5 pb-4 pt-6">
-        <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-[#C7AE6A] to-transparent" />
-        <Link href={`${base}/dashboard`} className="mt-3 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full" style={{ backgroundColor: GOLD }} />
-          <span className="font-semibold text-neutral-100">{t('brand')}</span>
-        </Link>
-      </div>
+      <div
+  className="
+    relative
+    px-4 py-6
+    bg-gradient-to-br from-neutral-900/90 to-neutral-800/80
+    before:absolute before:inset-x-0 before:top-0 before:h-[3px]
+    before:bg-gradient-to-r before:from-transparent before:via-[#C7AE6A] before:to-transparent
+    after:absolute after:inset-x-0 after:bottom-0 after:h-[3px]
+    after:bg-gradient-to-r after:from-transparent after:via-[#C7AE6A] after:to-transparent
+  "
+>
+  <div className='flex items-center justify-center'>
+      <Image src="/logo.webp" alt="Logo" width={200} height={32} />
+  </div>
+</div>
+
 
       {/* Nav list */}
       <nav className="px-2 py-3">
