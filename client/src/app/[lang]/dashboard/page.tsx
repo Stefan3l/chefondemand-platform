@@ -4,7 +4,8 @@ import ChefDashboardShell from '@/components/dashboard/ChefDashboardShell';
 import Link from 'next/link';
 import { CheckCircle2, Circle, ClipboardList, Inbox, Send, CheckCircle, type LucideIcon } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
-
+import { useState } from 'react';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const GOLD = '#C7AE6A';
 
@@ -15,25 +16,28 @@ export default function DashboardPage() {
   const { t, locale } = useTranslation('dashboard');
   const dateLocale = locale === 'it' ? 'it-IT' : 'en-US';
 
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
+
   // mock data
   const profileComplete = 62;
 
   const steps: Step[] = [
-    { text: t('profile.steps.photo'),   done: false },
-    { text: t('profile.steps.menu'),    done: false },
-    { text: t('profile.steps.certs'),   done: true  },
-    { text: t('profile.steps.payments'), done: false }
+    { text: t('profile.steps.photo'), done: false },
+    { text: t('profile.steps.menu'), done: false },
+    { text: t('profile.steps.certs'), done: true },
+    { text: t('profile.steps.payments'), done: false },
   ];
 
   const stats: StatItem[] = [
     { label: t('stats.available'), value: 0, icon: ClipboardList, iconBg: 'rgba(88,101,242,0.10)', iconColor: '#5865F2' },
-    { label: t('stats.received'),  value: 0, icon: Inbox,         iconBg: 'rgba(254,178,42,0.10)', iconColor: '#FEB22A' },
-    { label: t('stats.sent'),      value: 0, icon: Send,          iconBg: 'rgba(235,69,158,0.10)', iconColor: '#EB459E' },
-    { label: t('stats.closed'),    value: 0, icon: CheckCircle,   iconBg: 'rgba(34,197,94,0.10)',  iconColor: '#22C55E' },
+    { label: t('stats.received'), value: 0, icon: Inbox,         iconBg: 'rgba(254,178,42,0.10)', iconColor: '#FEB22A' },
+    { label: t('stats.sent'),     value: 0, icon: Send,          iconBg: 'rgba(235,69,158,0.10)', iconColor: '#EB459E' },
+    { label: t('stats.closed'),   value: 0, icon: CheckCircle,   iconBg: 'rgba(34,197,94,0.10)',  iconColor: '#22C55E' },
   ];
 
-  const monthLabel = new Date().toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' });
-  const monthOnly  = new Date().toLocaleDateString(dateLocale, { month: 'long' });
+  const monthLabel = selectedDate.toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' });
+  const monthOnly  = selectedDate.toLocaleDateString(dateLocale, { month: 'long' });
 
   return (
     <ChefDashboardShell userName="Stefanel Mihaila">
@@ -45,13 +49,10 @@ export default function DashboardPage() {
               <h3 className="text-base font-semibold text-neutral-100">{t('profile.title')}</h3>
               <p className="text-sm text-neutral-400">{t('profile.subtitle')}</p>
             </div>
-
-            {/* progress ring */}
             <div className="relative grid h-16 w-16 place-items-center">
               <svg viewBox="0 0 36 36" className="-rotate-90">
                 <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={3} />
-                <circle
-                  cx="18" cy="18" r="15.5" fill="none" stroke={GOLD} strokeWidth={3}
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke={GOLD} strokeWidth={3}
                   strokeDasharray={`${(profileComplete / 100) * 97} 97`} strokeLinecap="round"
                 />
               </svg>
@@ -59,6 +60,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* steps */}
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {steps.map((s) => (
               <div
@@ -73,28 +75,83 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-
-          <div className="mt-4">
-            <Link
-              href={`/${locale}/profile`}
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:brightness-95"
-              style={{ backgroundColor: GOLD }}
-            >
-              {t('profile.button')} →
-            </Link>
-          </div>
         </section>
       )}
 
       {/* Stats */}
       <section className="mt-6">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold tracking-wide text-neutral-300">{t('stats.title')}</h2>
-          <button className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-300">
+          <h2 className="text-md font-semibold tracking-wide text-neutral-300">{t('stats.title')}</h2>
+
+          {/* Button that opens modal calendar */}
+          <button
+            onClick={() => setShowCalendar(true)}
+            className="cursor-pointer inline-flex items-center gap-2 rounded-lg font-semibold border border-white/10 bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:text-[#C7AE6A] hover:border-[#C7AE6A33] hover:bg-[#1E1B15]"
+          >
             {monthLabel}
             <span className="opacity-60">▼</span>
           </button>
         </div>
+
+        {/* Modal calendar */}
+              {showCalendar && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+              onClick={() => setShowCalendar(false)}
+            >
+              <div
+                className="w-[420px] rounded-2xl bg-neutral-900 p-0 shadow-lg shadow-black/40 border border-[#C7AE6A33]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* custom header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#C7AE6A33]">
+                  <button
+                    onClick={() => setSelectedDate(new Date(selectedDate.getFullYear() - 1, selectedDate.getMonth()))}
+                    className="text-neutral-400 hover:text-[#C7AE6A] text-4xl"
+                  >
+                    ‹
+                  </button>
+                  <span className="text-lg font-semibold text-[#C7AE6A]">
+                    {selectedDate.getFullYear()}
+                  </span>
+                  <button
+                    onClick={() => setSelectedDate(new Date(selectedDate.getFullYear() + 1, selectedDate.getMonth()))}
+                    className="text-neutral-400 hover:text-[#C7AE6A] text-4xl"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                {/* Month grid */}
+                <div className="grid grid-cols-3 gap-3 px-6 py-6 font-semibold">
+                  {Array.from({ length: 12 }).map((_, idx) => {
+                    const date = new Date(selectedDate.getFullYear(), idx);
+                    const label = date.toLocaleString(dateLocale, { month: 'short' });
+                    const isCurrent = idx === selectedDate.getMonth();
+
+                    return (
+                      <button
+                        key={idx}
+                        className={[
+                          "rounded-md py-2 text-center text-sm transition",
+                          isCurrent
+                            ? "text-[#C7AE6A] font-semibold"
+                            : "text-neutral-400 hover:text-[#C7AE6A]"
+                        ].join(" ")}
+                        onClick={() => {
+                          setShowCalendar(false);
+                          setSelectedDate(date);
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {stats.map((s) => (
@@ -115,18 +172,14 @@ export default function DashboardPage() {
 
       {/* Main grid */}
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
-        {/* Revenue */}
         <div className="rounded-2xl border border-white/10 bg-neutral-900 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="font-semibold">
-              {t('revenue.title')} {monthOnly}
-            </h3>
+            <h3 className="font-semibold">{t('revenue.title')} {monthOnly}</h3>
             <span style={{ color: GOLD }}>€0</span>
           </div>
           <div className="h-64 rounded-xl bg-white/5" />
         </div>
 
-        {/* Bookings */}
         <div className="rounded-2xl border border-white/10 bg-neutral-900 p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="font-semibold">{t('bookings.title')}</h3>
@@ -134,7 +187,6 @@ export default function DashboardPage() {
               {t('bookings.viewAll')}
             </Link>
           </div>
-
           <div className="grid place-items-center rounded-xl bg-white/5 p-8 text-center text-neutral-400">
             <span className="text-3xl">📅</span>
             <p className="mt-2 text-sm">{t('bookings.emptyTitle')}</p>
