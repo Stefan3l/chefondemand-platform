@@ -30,10 +30,11 @@ export default function DashboardPage() {
   ];
 
   const stats: StatItem[] = [
-    { label: t('stats.received'), value: 0, icon: Inbox,         iconBg: 'rgba(254,178,42,0.10)', iconColor: '#FEB22A' },
-    { label: t('stats.sent'),     value: 0, icon: Send,          iconBg: 'rgba(235,69,158,0.10)', iconColor: '#EB459E' },
-    { label: t('stats.closed'),   value: 0, icon: CheckCircle,   iconBg: 'rgba(34,197,94,0.10)',  iconColor: '#22C55E' },
-  ];
+  { label: t('stats.received'), value: 0, icon: Inbox,       iconBg: 'bg-[rgba(254,178,42,0.10)]', iconColor: 'text-[#FEB22A]' },
+  { label: t('stats.sent'),     value: 0, icon: Send,        iconBg: 'bg-[rgba(235,69,158,0.10)]', iconColor: 'text-[#EB459E]' },
+  { label: t('stats.closed'),   value: 0, icon: CheckCircle, iconBg: 'bg-[rgba(34,197,94,0.10)]',  iconColor: 'text-[#22C55E]' },
+];
+
 
   const monthLabel = selectedDate.toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' });
   const monthOnly  = selectedDate.toLocaleDateString(dateLocale, { month: 'long' });
@@ -156,7 +157,7 @@ export default function DashboardPage() {
           {stats.map((s) => (
             <div key={s.label} className="rounded-2xl border border-[#C7AE6A33] bg-neutral-900 p-4 hover:translate-y-[-2px] hover:bg-[#2D291F] hover:border-[#C7AE6A] transition-transform duration-200 ">
               <div className="flex items-center justify-center lg:justify-start gap-3">
-                <div className="grid h-9 w-9 place-items-center rounded-full" style={{ background: s.iconBg, color: s.iconColor }}>
+                <div className={`grid h-9 w-9 place-items-center rounded-full  ${s.iconBg} ${s.iconColor}`} >
                   <s.icon size={18} />
                 </div>
                 <div className='flex items-center gap-2'> 
