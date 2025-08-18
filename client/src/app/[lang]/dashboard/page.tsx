@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const monthOnly  = new Date().toLocaleDateString(dateLocale, { month: 'long' });
 
   return (
-    <ChefDashboardShell userName="Giuseppe Macchia">
+    <ChefDashboardShell userName="Stefanel Mihaila">
       {/* Profile completion */}
       {profileComplete < 100 && (
         <section className="rounded-2xl border border-white/10 bg-neutral-900 p-4 sm:p-5">

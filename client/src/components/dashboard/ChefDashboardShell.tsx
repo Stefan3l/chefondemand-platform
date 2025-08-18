@@ -12,18 +12,20 @@ import {
   UtensilsCrossed,
   ChevronDown,
   LogOut,
-  Menu,
   X,
   BookOpen,
   Pizza,
-  Search,
   Home,
   MessageSquare,
   MoreHorizontal,
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
-import Image from 'next/image';
+import StickyHeader from './StickyHeader';
+
+
+//import components
+import LogoDashboard from './LogoDashboard';
 
 const GOLD = '#C7AE6A';
 
@@ -39,13 +41,12 @@ interface Props {
   userName?: string;
 }
 
-export default function ChefDashboardShell({ children, userName = 'Giuseppe Macchia' }: Props) {
+export default function ChefDashboardShell({ children, userName = 'Stefanel Mihaila' }: Props) {
   const { t, locale } = useTranslation('dashboard');
   const pathname = usePathname();
 
   const [mobileDrawer, setMobileDrawer] = React.useState<boolean>(false);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
-  const [userOpen, setUserOpen] = React.useState<boolean>(false);
 
   const base = `/${locale}`;
   const dateLocale = locale === 'it' ? 'it-IT' : 'en-US';
@@ -84,21 +85,7 @@ export default function ChefDashboardShell({ children, userName = 'Giuseppe Macc
       aria-label="Sidebar"
     >
       {/* Logo header */}
-      <div
-  className="
-    relative
-    px-4 py-6
-    bg-gradient-to-br from-neutral-900/90 to-neutral-800/80
-    before:absolute before:inset-x-0 before:top-0 before:h-[3px]
-    before:bg-gradient-to-r before:from-transparent before:via-[#C7AE6A] before:to-transparent
-    after:absolute after:inset-x-0 after:bottom-0 after:h-[3px]
-    after:bg-gradient-to-r after:from-transparent after:via-[#C7AE6A] after:to-transparent
-  "
->
-  <div className='flex items-center justify-center'>
-      <Image src="/logo.webp" alt="Logo" width={200} height={32} />
-  </div>
-</div>
+      <LogoDashboard />
 
 
       {/* Nav list */}
@@ -226,17 +213,6 @@ export default function ChefDashboardShell({ children, userName = 'Giuseppe Macc
     <div className="h-screen w-full bg-neutral-950 text-neutral-100">
       {/* Desktop: fixed sidebar */}
       <div className="fixed inset-y-0 left-0 hidden md:block">{Sidebar}</div>
-
-      {/* Mobile: hamburger */}
-      <button
-        type="button"
-        onClick={() => setMobileDrawer(true)}
-        className="fixed left-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-800 text-neutral-100 md:hidden"
-        aria-label="Open menu"
-      >
-        <Menu size={18} />
-      </button>
-
       {/* Mobile Drawer */}
       {mobileDrawer && (
         <>
@@ -262,83 +238,9 @@ export default function ChefDashboardShell({ children, userName = 'Giuseppe Macc
       {/* Main column */}
       <div className="flex h-full flex-col md:pl-64">
         {/* Sticky header */}
-        <header className="sticky top-0 z-30 border-b border-white/10 bg-neutral-900/60 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-lg font-semibold sm:text-xl">
-                {t('header.welcome')} {userName}
-              </h1>
-              <span className="hidden text-xs text-neutral-400 sm:inline">
-                •{' '}
-                {new Date().toLocaleDateString(dateLocale, {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </span>
-            </div>
+        <StickyHeader base={base} firstName={firstName} t={t} />
 
-            <div className="flex items-center gap-3">
-              {/* Search (>= sm) */}
-              <div className="relative hidden items-center sm:flex">
-                <input
-                  placeholder={t('header.searchPlaceholder')}
-                  className="h-9 w-64 rounded-xl border border-white/10 bg-neutral-900 px-3 pr-9 text-sm placeholder-neutral-500 outline-none focus:ring-2 focus:ring-[#C7AE6A]"
-                />
-                <Search size={16} className="absolute right-3 text-neutral-500" />
-              </div>
 
-              {/* User dropdown */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setUserOpen((s) => !s)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-neutral-900 px-2.5 py-1.5"
-                >
-                  <div
-                    className="grid h-7 w-7 place-items-center rounded-full"
-                    style={{ backgroundColor: GOLD, color: '#0A0A0A' }}
-                  >
-                    {firstName.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="hidden text-sm sm:inline">{firstName}</span>
-                  <ChevronDown size={16} className="text-[#C7AE6A]" />
-                </button>
-
-                {userOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-white/10 bg-neutral-900 p-2 shadow-xl">
-                    <Link
-                      href={`${base}/account`}
-                      className="block rounded-lg px-3 py-2 text-sm text-neutral-200 hover:bg-white/5"
-                    >
-                      Il mio account
-                    </Link>
-                    <Link
-                      href={`${base}/change-password`}
-                      className="block rounded-lg px-3 py-2 text-sm text-neutral-200 hover:bg-white/5"
-                    >
-                      Cambio password
-                    </Link>
-                    <Link
-                      href={`${base}/logout`}
-                      className="block rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-white/5"
-                    >
-                      {t('nav.logout')}
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Welcome banner */}
-          <div className="px-4 pb-4 sm:px-6">
-            <div className="rounded-2xl border border-[rgba(199,174,106,0.2)] bg-gradient-to-br from-[rgba(199,174,106,0.10)] to-[rgba(199,174,106,0.05)] p-4">
-              <p className="text-sm text-neutral-200">{t('header.banner')}</p>
-            </div>
-          </div>
-        </header>
 
         {/* Scrollable content */}
         <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">{children}</main>
