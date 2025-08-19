@@ -14,7 +14,6 @@ type Props = {
 };
 
 export default function LoginChefModal({ open, onClose }: Props) {
-  // Use the "login" namespace
   const { t } = useTranslation("login");
   const router = useRouter();
   const pathname = usePathname();
@@ -26,10 +25,8 @@ export default function LoginChefModal({ open, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
 
-  // Do not render when closed
   if (!open) return null;
 
-  // Minimal client-side validation
   const validate = (): string | null => {
     if (!email.trim()) return t("errors.required_email");
     if (!/^\S+@\S+\.\S+$/.test(email)) return t("errors.invalid_email");
@@ -37,7 +34,6 @@ export default function LoginChefModal({ open, onClose }: Props) {
     return null;
   };
 
-  // Submit login form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrMsg(null);
@@ -50,12 +46,26 @@ export default function LoginChefModal({ open, onClose }: Props) {
 
     try {
       setLoading(true);
-      await api.post("/api/chef/login", { email, password });
 
-      try {
-        if (remember) localStorage.setItem("cod_email_hint", email);
-        else localStorage.removeItem("cod_email_hint");
-      } catch { /* ignore */ }
+      // fac login (ex: {token, name, email})
+      const res = await api.post("/api/chef/login", { email, password });
+
+      // 👉 salvăm datele utile în localStorage
+      //    (poți salva și token-ul sau id-ul dacă vrei)
+      localStorage.setItem(
+        "loggedUser",
+        JSON.stringify({
+          name: res.data.firstName, // presupun că backend-ul returnează un câmp "name"
+          email: res.data.email,
+          token: res.data.token,
+        })
+      );
+
+      if (remember) {
+        localStorage.setItem("cod_email_hint", email);
+      } else {
+        localStorage.removeItem("cod_email_hint");
+      }
 
       router.push(`/${lang}/dashboard`);
       onClose();
@@ -77,12 +87,9 @@ export default function LoginChefModal({ open, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-modal="true">
-      {/* Dark overlay */}
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
 
-      {/* Dark panel kept the same style as before; responsive side padding via mx */}
       <div className="relative w-full max-w-md mx-4 sm:mx-6 rounded-2xl bg-neutral-900 shadow-2xl ring-1 ring-white/10 max-h-[90vh] overflow-y-auto p-5 sm:px-6 sm:py-10">
-        {/* Close button pinned to top-right */}
         <button
           type="button"
           onClick={onClose}
@@ -92,17 +99,14 @@ export default function LoginChefModal({ open, onClose }: Props) {
           <X size={16} />
         </button>
 
-        {/* Title centered like in Register */}
         <div className="text-center mb-4">
           <Heading level="h3" className="text-2xl font-semibold text-[#C7AE6A]">
             {t("title")}
           </Heading>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* Email */}
             <div>
               <label htmlFor="login-email" className="mb-1 block text-sm text-neutral-300">
                 {t("email_label")}
@@ -118,7 +122,6 @@ export default function LoginChefModal({ open, onClose }: Props) {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="login-password" className="mb-1 block text-sm text-neutral-300">
                 {t("password_label")}
@@ -134,37 +137,16 @@ export default function LoginChefModal({ open, onClose }: Props) {
               />
             </div>
 
-            {/* Remember me — gold when checked + black checkmark */}
             <label htmlFor="login-remember" className="flex cursor-pointer select-none items-center gap-3 text-sm text-neutral-300">
-              {/* Native input hidden visually but accessible */}
-              <input
-                id="login-remember"
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="peer sr-only"
-              />
-              {/* Custom box bound to peer state */}
-              <span className="relative inline-flex h-5 w-5 items-center justify-center rounded border border-neutral-600 bg-neutral-800 transition-colors peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#C7AE6A] peer-checked:bg-[#C7AE6A]">
-                <svg
-                  viewBox="0 0 20 20"
-                  className="pointer-events-none absolute h-3.5 w-3.5 opacity-0 transition-opacity peer-checked:opacity-100"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 10.5l3 3 7-7"
-                    fill="none"
-                    stroke="#000000" /* black check */
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+              <input id="login-remember" type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="peer sr-only" />
+              <span className="relative inline-flex h-5 w-5 items-center justify-center rounded border border-neutral-600 bg-neutral-800 transition-colors peer-checked:bg-[#C7AE6A]">
+                <svg viewBox="0 0 20 20" className="pointer-events-none absolute h-3.5 w-3.5 opacity-0 transition-opacity peer-checked:opacity-100">
+                  <path d="M5 10.5l3 3 7-7" fill="none" stroke="#000000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
               <span>{t("remember")}</span>
             </label>
 
-            {/* Error banner */}
             {errMsg && (
               <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300">
                 {errMsg}
@@ -172,20 +154,11 @@ export default function LoginChefModal({ open, onClose }: Props) {
             )}
           </div>
 
-          {/* Actions */}
           <div className="mt-6 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 h-11 rounded-2xl border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-neutral-200 transition hover:bg-neutral-700"
-            >
+            <button type="button" onClick={onClose} className="flex-1 h-11 rounded-2xl border border-neutral-700 bg-neutral-800 px-4 py-2.5 text-neutral-200 transition hover:bg-neutral-700">
               {t("cancel")}
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 h-11 rounded-2xl bg-[#C7AE6A] px-4 py-2.5 font-semibold text-neutral-900 transition hover:brightness-95 disabled:opacity-60"
-            >
+            <button type="submit" disabled={loading} className="flex-1 h-11 rounded-2xl bg-[#C7AE6A] px-4 py-2.5 font-semibold text-neutral-900 transition hover:brightness-95 disabled:opacity-60">
               {loading ? t("submitting") : t("submit")}
             </button>
           </div>

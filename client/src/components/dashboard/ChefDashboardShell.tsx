@@ -16,7 +16,7 @@ import { useTranslation } from '@/utils/useTranslation';
 import LogoDashboard from './LogoDashboard';
 import StickyHeader from './StickyHeader';
 import WelcomeBanner from './WelcomeBanner';
-import DashboardSidebar from './DashboardSidebar';  // ✅ import nou
+import DashboardSidebar from './DashboardSidebar';  
 
 interface Props {
   children: React.ReactNode;
@@ -43,7 +43,7 @@ export default function ChefDashboardShell({ children, userName = 'Stefanel Miha
       {/* Desktop: fixed sidebar */}
       <div className="fixed inset-y-0 left-0 hidden md:block">
         <LogoDashboard />
-        <DashboardSidebar  // ✅ sidebar complet sub logo
+        <DashboardSidebar  
           base={base}
           richiesteDisponibili={richiesteDisponibili}
           unread={unread}
@@ -54,11 +54,11 @@ export default function ChefDashboardShell({ children, userName = 'Stefanel Miha
       {mobileDrawer && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            className="fixed inset-x-0 bottom-0 top-22 z-40 bg-black/60 md:hidden"
             onClick={() => setMobileDrawer(false)}
           />
-          <div className="fixed inset-y-0 left-0 z-50 w-72 md:hidden">
-            <LogoDashboard />
+          <div className="fixed inset-y-0 left-0 z-50 w-72 md:hidden mt-22">
+           
             <DashboardSidebar
               base={base}
               richiesteDisponibili={richiesteDisponibili}

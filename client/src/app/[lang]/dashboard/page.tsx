@@ -2,10 +2,12 @@
 
 import ChefDashboardShell from '@/components/dashboard/ChefDashboardShell';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CheckCircle2, Circle, Inbox, Send, CheckCircle, type LucideIcon } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
+import { api } from '@/lib/axios';
 
 const GOLD = '#C7AE6A';
 
@@ -13,13 +15,30 @@ type Step = { text: string; done: boolean };
 type StatItem = { label: string; value: number; icon: LucideIcon; iconBg: string; iconColor: string };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { t, locale } = useTranslation('dashboard');
   const dateLocale = locale === 'it' ? 'it-IT' : 'en-US';
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState<string>(''); // <-- definim înainte de orice return
 
-  // mock data
+ useEffect(() => {
+  async function fetchMe() {
+    try {
+      const res = await api.get('/api/chef/me');
+      setFirstName(res.data.firstName);
+    } catch {
+      router.push('/login');
+    }
+  }
+  fetchMe();
+}, [router]);
+
+
+  // Dacă numele nu există încă (prima randare) => nu afișăm pagina
+  if (!firstName) return null;
+
   const profileComplete = 62;
 
   const steps: Step[] = [
@@ -30,18 +49,16 @@ export default function DashboardPage() {
   ];
 
   const stats: StatItem[] = [
-  { label: t('stats.received'), value: 0, icon: Inbox,       iconBg: 'bg-[rgba(254,178,42,0.10)]', iconColor: 'text-[#FEB22A]' },
-  { label: t('stats.sent'),     value: 0, icon: Send,        iconBg: 'bg-[rgba(235,69,158,0.10)]', iconColor: 'text-[#EB459E]' },
-  { label: t('stats.closed'),   value: 0, icon: CheckCircle, iconBg: 'bg-[rgba(34,197,94,0.10)]',  iconColor: 'text-[#22C55E]' },
-];
-
+    { label: t('stats.received'), value: 0, icon: Inbox,       iconBg:'bg-[rgba(254,178,42,0.10)]', iconColor:'text-[#FEB22A]' },
+    { label: t('stats.sent'),     value: 0, icon: Send,        iconBg:'bg-[rgba(235,69,158,0.10)]', iconColor:'text-[#EB459E]' },
+    { label: t('stats.closed'),   value: 0, icon: CheckCircle, iconBg:'bg-[rgba(34,197,94,0.10)]',  iconColor:'text-[#22C55E]' },
+  ];
 
   const monthLabel = selectedDate.toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' });
   const monthOnly  = selectedDate.toLocaleDateString(dateLocale, { month: 'long' });
 
   return (
-    <ChefDashboardShell userName="Stefanel Mihaila">
-      {/* Profile completion */}
+    <ChefDashboardShell userName={firstName}>
       {profileComplete < 100 && (
         <section className="rounded-2xl border border-white/10 bg-neutral-900 p-4 sm:p-5">
           <div className="flex items-center justify-between">
@@ -52,23 +69,23 @@ export default function DashboardPage() {
             <div className="relative grid h-16 w-16 place-items-center">
               <svg viewBox="0 0 36 36" className="-rotate-90">
                 <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={3} />
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke={GOLD} strokeWidth={3}
-                  strokeDasharray={`${(profileComplete / 100) * 97} 97`} strokeLinecap="round"
+                <circle
+                  cx="18" cy="18" r="15.5"
+                  fill="none" stroke={GOLD} strokeWidth={3}
+                  strokeDasharray={`${(profileComplete / 100) * 97} 97`}
+                  strokeLinecap="round"
                 />
               </svg>
               <span className="absolute text-sm font-semibold">{profileComplete}%</span>
             </div>
           </div>
 
-          {/* steps */}
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {steps.map((s) => (
               <div
                 key={s.text}
-                className={[
-                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm',
-                  s.done ? 'bg-emerald-400/5 text-emerald-400' : 'bg-white/5 text-neutral-300',
-                ].join(' ')}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm
+                 ${s.done ? 'bg-emerald-400/5 text-emerald-400' : 'bg-white/5 text-neutral-300'}`}
               >
                 {s.done ? <CheckCircle2 size={16} /> : <Circle size={12} className="text-neutral-500" />}
                 <span>{s.text}</span>
@@ -78,89 +95,69 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Stats */}
       <section className="my-8">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-md font-semibold tracking-wide text-neutral-300">{t('stats.title')}</h2>
 
-          {/* Button that opens modal calendar */}
           <button
             onClick={() => setShowCalendar(true)}
-            className="cursor-pointer inline-flex items-center gap-2 rounded-lg font-semibold border border-[#C7AE6A33] bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:text-[#C7AE6A] hover:border-[#C7AE6A33] hover:bg-[#1E1B15]"
+            className="inline-flex items-center gap-2 rounded-lg border border-[#C7AE6A33] bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:text-[#C7AE6A] hover:border-[#C7AE6A33] hover:bg-[#1E1B15]"
           >
             {monthLabel}
             <span className="opacity-60">▼</span>
           </button>
         </div>
 
-        {/* Modal calendar */}
-              {showCalendar && (
+        {showCalendar && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+            onClick={() => setShowCalendar(false)}
+          >
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-              onClick={() => setShowCalendar(false)}
+              className="w-[420px] rounded-2xl bg-neutral-900 border border-[#C7AE6A33] p-0 shadow-lg shadow-black/40"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div
-                className="w-[420px] rounded-2xl bg-neutral-900 p-0 shadow-lg shadow-black/40 border border-[#C7AE6A33]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* custom header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#C7AE6A33]">
-                  <button
-                    onClick={() => setSelectedDate(new Date(selectedDate.getFullYear() - 1, selectedDate.getMonth()))}
-                    className="text-neutral-400 hover:text-[#C7AE6A] text-4xl"
-                  >
-                    ‹
-                  </button>
-                  <span className="text-lg font-semibold text-[#C7AE6A]">
-                    {selectedDate.getFullYear()}
-                  </span>
-                  <button
-                    onClick={() => setSelectedDate(new Date(selectedDate.getFullYear() + 1, selectedDate.getMonth()))}
-                    className="text-neutral-400 hover:text-[#C7AE6A] text-4xl"
-                  >
-                    ›
-                  </button>
-                </div>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#C7AE6A33]">
+                <button onClick={() => setSelectedDate(new Date(selectedDate.getFullYear() - 1, selectedDate.getMonth()))} className="text-neutral-400 hover:text-[#C7AE6A] text-4xl">‹</button>
+                <span className="text-lg font-semibold text-[#C7AE6A]">{selectedDate.getFullYear()}</span>
+                <button onClick={() => setSelectedDate(new Date(selectedDate.getFullYear() + 1, selectedDate.getMonth()))} className="text-neutral-400 hover:text-[#C7AE6A] text-4xl">›</button>
+              </div>
 
-                {/* Month grid */}
-                <div className="grid grid-cols-3 gap-3 px-6 py-6 font-semibold">
-                  {Array.from({ length: 12 }).map((_, idx) => {
-                    const date = new Date(selectedDate.getFullYear(), idx);
-                    const label = date.toLocaleString(dateLocale, { month: 'short' });
-                    const isCurrent = idx === selectedDate.getMonth();
+              <div className="grid grid-cols-3 gap-3 px-6 py-6 font-semibold">
+                {Array.from({ length: 12 }).map((_, idx) => {
+                  const date  = new Date(selectedDate.getFullYear(), idx);
+                  const label = date.toLocaleString(dateLocale, { month: 'short' });
+                  const isCurrent = idx === selectedDate.getMonth();
 
-                    return (
-                      <button
-                        key={idx}
-                        className={[
-                          "rounded-md py-2 text-center text-sm transition",
-                          isCurrent
-                            ? "text-[#C7AE6A] font-semibold"
-                            : "text-neutral-400 hover:text-[#C7AE6A]"
-                        ].join(" ")}
-                        onClick={() => {
-                          setShowCalendar(false);
-                          setSelectedDate(date);
-                        }}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setShowCalendar(false);
+                        setSelectedDate(date);
+                      }}
+                      className={`
+                        rounded-md py-2 text-center text-sm transition
+                        ${isCurrent ? 'text-[#C7AE6A] font-semibold' : 'text-neutral-400 hover:text-[#C7AE6A]'}
+                      `}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-
+          </div>
+        )}
 
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-[#C7AE6A33] bg-neutral-900 p-4 hover:translate-y-[-2px] hover:bg-[#2D291F] hover:border-[#C7AE6A] transition-transform duration-200 ">
+            <div key={s.label} className="rounded-2xl border border-[#C7AE6A33] bg-neutral-900 p-4 hover:-translate-y-[2px] hover:bg-[#2D291F] hover:border-[#C7AE6A] transition-transform duration-200 ">
               <div className="flex items-center justify-center lg:justify-start gap-3">
                 <div className={`grid h-9 w-9 place-items-center rounded-full  ${s.iconBg} ${s.iconColor}`} >
                   <s.icon size={18} />
                 </div>
-                <div className='flex items-center gap-2'> 
+                <div className="flex items-center gap-2"> 
                   <div className="text-md text-neutral-400 font-medium">{s.label}</div>
                   <div className="text-lg font-semibold">{s.value}</div>
                 </div>
@@ -170,7 +167,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Main grid */}
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-white/10 bg-neutral-900 p-4">
           <div className="mb-3 flex items-center justify-between">

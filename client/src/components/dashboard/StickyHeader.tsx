@@ -40,7 +40,7 @@ export default function StickyHeader({ base, firstName, t }: StickyHeaderProps) 
   })();
 
   return (
-    <header className="sticky top-0 z-30
+    <header className="sticky top-0 z-30 h-22
         before:absolute before:inset-x-0 before:top-0 before:h-[3px] before:bg-gradient-to-r before:from-transparent before:via-[#C7AE6A] before:to-transparent
         after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:bg-gradient-to-r after:from-transparent after:via-[#C7AE6A] after:to-transparent
         bg-gradient-to-br from-neutral-900/90 to-neutral-800/80

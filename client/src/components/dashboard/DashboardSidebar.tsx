@@ -185,7 +185,7 @@ export default function DashboardSidebar({
                 <UtensilsCrossed size={18} strokeWidth={2.5} />
                 {t('nav.menus')}
               </span>
-              <ChevronDown size={16} className={"ml-1 transition " + (menuOpen ? "rotate-180 text-[#C7AE6A]" : "text-white/60")} />
+              <ChevronDown size={16} className={"ml-2 transition " + (menuOpen ? "rotate-180 text-[#C7AE6A]" : "text-white/60")} />
             </button>
 
             <div className={`${menuOpen ? "max-h-32" : "max-h-0"} space-y-2 ml-10 overflow-hidden rounded-lg transition-[max-height] duration-300`}>
