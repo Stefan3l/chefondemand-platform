@@ -72,11 +72,12 @@ export default function ChefDashboardShell({ children, userName = 'Stefanel Miha
       <div className="flex h-full flex-col md:pl-64">
         {/* Sticky header */}
         <StickyHeader base={base} firstName={firstName} t={t} />
-
-        <WelcomeBanner firstName={firstName} />
+      
+        
 
         {/* Scrollable content */}
-        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 ">
+          <WelcomeBanner firstName={firstName} />
           {children}
         </main>
 
