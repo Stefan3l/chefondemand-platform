@@ -11,7 +11,7 @@ import { api } from '@/lib/axios';
 
 const GOLD = '#C7AE6A';
 
-type Step = { text: string; done: boolean };
+type Step  = { text: string; done: boolean };
 type StatItem = { label: string; value: number; icon: LucideIcon; iconBg: string; iconColor: string };
 
 export default function DashboardPage() {
@@ -19,33 +19,40 @@ export default function DashboardPage() {
   const { t, locale } = useTranslation('dashboard');
   const dateLocale = locale === 'it' ? 'it-IT' : 'en-US';
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showCalendar, setShowCalendar] = useState<boolean>(false);
-  const [firstName, setFirstName] = useState<string>(''); // <-- definim înainte de orice return
+  const [selectedDate, setSelectedDate]   = useState<Date>(new Date());
+  const [showCalendar, setShowCalendar]   = useState<boolean>(false);
+  const [firstName, setFirstName]         = useState<string>('');
 
- useEffect(() => {
-  async function fetchMe() {
-    try {
-      const res = await api.get('/api/chef/me');
-      setFirstName(res.data.firstName);
-    } catch {
+  // ✅ Guard + fetch
+  useEffect(() => {
+    const stored = localStorage.getItem("loggedUser");
+    if (!stored) {
       router.push('/login');
+      return;
     }
-  }
-  fetchMe();
-}, [router]);
 
+    async function fetchMe() {
+      try {
+        const res = await api.get('/api/chef/me');
+        setFirstName(res.data.firstName);
+      } catch {
+        router.push('/login');
+      }
+    }
 
-  // Dacă numele nu există încă (prima randare) => nu afișăm pagina
+    fetchMe();
+  }, [router]);
+
+  // Nu afișăm pagina până când avem numele (=> user valid)
   if (!firstName) return null;
 
   const profileComplete = 62;
 
   const steps: Step[] = [
-    { text: t('profile.steps.photo'), done: false },
-    { text: t('profile.steps.menu'), done: false },
-    { text: t('profile.steps.certs'), done: true },
-    { text: t('profile.steps.payments'), done: false },
+    { text: t('profile.steps.photo'),     done: false },
+    { text: t('profile.steps.menu'),      done: false },
+    { text: t('profile.steps.certs'),     done: true  },
+    { text: t('profile.steps.payments'),  done: false },
   ];
 
   const stats: StatItem[] = [
@@ -64,7 +71,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-semibold text-neutral-100">{t('profile.title')}</h3>
-              <p className="text-sm text-neutral-400">{t('profile.subtitle')}</p>
+              <p   className="text-sm  text-neutral-400">{t('profile.subtitle')}</p>
             </div>
             <div className="relative grid h-16 w-16 place-items-center">
               <svg viewBox="0 0 36 36" className="-rotate-90">
@@ -85,7 +92,7 @@ export default function DashboardPage() {
               <div
                 key={s.text}
                 className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm
-                 ${s.done ? 'bg-emerald-400/5 text-emerald-400' : 'bg-white/5 text-neutral-300'}`}
+                  ${s.done ? 'bg-emerald-400/5 text-emerald-400' : 'bg-white/5 text-neutral-300'}`}
               >
                 {s.done ? <CheckCircle2 size={16} /> : <Circle size={12} className="text-neutral-500" />}
                 <span>{s.text}</span>
@@ -97,8 +104,7 @@ export default function DashboardPage() {
 
       <section className="my-8">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-md font-semibold tracking-wide text-neutral-300">{t('stats.title')}</h2>
-
+          <h2 className="text-md font-semibold text-neutral-300">{t('stats.title')}</h2>
           <button
             onClick={() => setShowCalendar(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-[#C7AE6A33] bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:text-[#C7AE6A] hover:border-[#C7AE6A33] hover:bg-[#1E1B15]"
@@ -109,10 +115,8 @@ export default function DashboardPage() {
         </div>
 
         {showCalendar && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-            onClick={() => setShowCalendar(false)}
-          >
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+            onClick={() => setShowCalendar(false)}>
             <div
               className="w-[420px] rounded-2xl bg-neutral-900 border border-[#C7AE6A33] p-0 shadow-lg shadow-black/40"
               onClick={(e) => e.stopPropagation()}
@@ -122,24 +126,16 @@ export default function DashboardPage() {
                 <span className="text-lg font-semibold text-[#C7AE6A]">{selectedDate.getFullYear()}</span>
                 <button onClick={() => setSelectedDate(new Date(selectedDate.getFullYear() + 1, selectedDate.getMonth()))} className="text-neutral-400 hover:text-[#C7AE6A] text-4xl">›</button>
               </div>
-
               <div className="grid grid-cols-3 gap-3 px-6 py-6 font-semibold">
                 {Array.from({ length: 12 }).map((_, idx) => {
-                  const date  = new Date(selectedDate.getFullYear(), idx);
+                  const date = new Date(selectedDate.getFullYear(), idx);
                   const label = date.toLocaleString(dateLocale, { month: 'short' });
                   const isCurrent = idx === selectedDate.getMonth();
-
                   return (
                     <button
                       key={idx}
-                      onClick={() => {
-                        setShowCalendar(false);
-                        setSelectedDate(date);
-                      }}
-                      className={`
-                        rounded-md py-2 text-center text-sm transition
-                        ${isCurrent ? 'text-[#C7AE6A] font-semibold' : 'text-neutral-400 hover:text-[#C7AE6A]'}
-                      `}
+                      onClick={() => { setShowCalendar(false); setSelectedDate(date); }}
+                      className={`${ isCurrent ? 'text-[#C7AE6A] font-semibold' : 'text-neutral-400 hover:text-[#C7AE6A]' } rounded-md py-2 text-center text-sm transition`}
                     >
                       {label}
                     </button>
@@ -157,7 +153,7 @@ export default function DashboardPage() {
                 <div className={`grid h-9 w-9 place-items-center rounded-full  ${s.iconBg} ${s.iconColor}`} >
                   <s.icon size={18} />
                 </div>
-                <div className="flex items-center gap-2"> 
+                <div className="flex items-center gap-2">
                   <div className="text-md text-neutral-400 font-medium">{s.label}</div>
                   <div className="text-lg font-semibold">{s.value}</div>
                 </div>
@@ -179,9 +175,7 @@ export default function DashboardPage() {
         <div className="rounded-2xl border border-white/10 bg-neutral-900 p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="font-semibold">{t('bookings.title')}</h3>
-            <Link href={`/${locale}/requests`} className="text-sm text-neutral-400 hover:text-neutral-200">
-              {t('bookings.viewAll')}
-            </Link>
+            <Link href={`/${locale}/requests`} className="text-sm text-neutral-400 hover:text-neutral-200">{t('bookings.viewAll')}</Link>
           </div>
           <div className="grid place-items-center rounded-xl bg-white/5 p-8 text-center text-neutral-400">
             <span className="text-3xl">📅</span>

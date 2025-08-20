@@ -50,12 +50,11 @@ export default function LoginChefModal({ open, onClose }: Props) {
       // fac login (ex: {token, name, email})
       const res = await api.post("/api/chef/login", { email, password });
 
-      // 👉 salvăm datele utile în localStorage
-      //    (poți salva și token-ul sau id-ul dacă vrei)
+      //  salvăm datele utile în localStorage
       localStorage.setItem(
         "loggedUser",
         JSON.stringify({
-          name: res.data.firstName, // presupun că backend-ul returnează un câmp "name"
+          name: res.data.firstName, 
           email: res.data.email,
           token: res.data.token,
         })

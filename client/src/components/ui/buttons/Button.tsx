@@ -17,7 +17,7 @@ const buttonVariants = tv({
         'hover:shadow-[0_8px_25px_rgba(199,174,106,0.5)]' // box-shadow custom la hover
       ].join(' '),
       secondary:
-        'bg-[#171717] text-gray-300 border-2 border-[#28261F] hover:border-[#C7AE6A] hover:text-[#C7AE6A]',
+        'bg-[#171717] text-gray-300 border-2 border-[#28261F] hover:border-[#C7AE6A33] hover:text-[#C7AE6A]',
       ghost: 'bg-transparent text-gray-200 hover:bg-white/5'
     },
     size: {
