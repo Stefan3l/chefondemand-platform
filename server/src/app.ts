@@ -10,6 +10,8 @@ import cookieParser from "cookie-parser";
 // import routes
 import chefsRoutes from "./routes/chefs";
 import authRoutes from "./routes/auth.routes";
+import { chefsRouter } from "./modules/chefs/chefs.routes";
+
 
 import healthRoutes from "./routes/health";
 import inquiriesRoutes from "./routes/inquiries";
@@ -37,6 +39,7 @@ app.use(express.json({ limit: "1mb" })); // Parse incoming JSON requests with bo
 // Route for chef registration
 app.use("/api", chefsRoutes);
 app.use("/api", authRoutes);
+app.use("/api/chefs", chefsRouter); // Chef-related routes
 
 // Rate limiter to prevent abuse and brute-force attacks
 app.use(

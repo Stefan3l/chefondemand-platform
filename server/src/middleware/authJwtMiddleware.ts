@@ -14,7 +14,7 @@ export function authJwtMiddleware(req: Request, res: Response, next: NextFunctio
   try {
     const secret = process.env.JWT_SECRET;
     const decoded = verify(token, secret!);
-    // atașăm userul pe request (ex: { sub, email, role })
+  
     (req as any).user = decoded;
     return next();
   } catch (err) {
