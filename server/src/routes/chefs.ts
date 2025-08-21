@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerChef } from '../controllers/ChefsController';
+import { registerChef } from '../modules/chefs/chefs.controller';
 
 const router = Router();
 

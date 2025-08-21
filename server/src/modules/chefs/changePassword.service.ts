@@ -1,4 +1,3 @@
-// src/modules/chefs/changePassword.service.ts
 import { prisma } from "../../prisma";
 import bcrypt from "bcrypt";
 import { AppError } from "../../utils/AppError";
@@ -24,6 +23,7 @@ export async function changeChefPassword({ userId, oldPassword, newPassword }: I
     throw new AppError("La password corrente non è corretta.", 400);
   }
 
+  // Evita riutilizzo identico
   const same = await bcrypt.compare(newPassword, chef.passwordHash);
   if (same) {
     throw new AppError("La nuova password deve essere diversa da quella corrente.", 400);

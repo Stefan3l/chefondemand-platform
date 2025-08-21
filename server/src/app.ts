@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 // import routes
-import chefsRoutes from "./routes/chefs";
+// import chefsRoutes from "./routes/chefs";
 import authRoutes from "./routes/auth.routes";
 import { chefsRouter } from "./modules/chefs/chefs.routes";
 
@@ -37,7 +37,7 @@ app.use(compression()); // Compresses response bodies for better performance
 app.use(express.json({ limit: "1mb" })); // Parse incoming JSON requests with body limit
 
 // Route for chef registration
-app.use("/api", chefsRoutes);
+// app.use("/api", chefsRoutes);
 app.use("/api", authRoutes);
 app.use("/api/chefs", chefsRouter); // Chef-related routes
 
