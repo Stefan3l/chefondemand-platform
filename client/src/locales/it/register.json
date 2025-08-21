@@ -11,17 +11,21 @@
       "country": "Paese",
       "numberPlaceholder": "Il tuo numero di telefono"
     },
-    "email": { "label": "Email *", "placeholder": "nome@esempio.com" },
-    "emailConfirm": { "label": "Conferma email *", "placeholder": "nome@esempio.com" },
-    "password": { "label": "Password *", "placeholder": "Min. 6 caratteri" }
+    "email": { "label": "Email *", "placeholder": "nome@example.com" },
+    "emailConfirm": { "label": "Conferma email *", "placeholder": "nome@example.com" },
+    "password": {
+      "label": "Password *",
+      "placeholder": "Min. 8 caratteri, maiuscole/minuscole/numero, senza spazi",
+      "hint": "8–72 caratteri, almeno una maiuscola, una minuscola e un numero. Niente spazi."
+    }
   },
 
   "terms": {
     "prefix": "Accetto i",
-    "connector": "e",
+    "connector": "nonché l'",
     "terms": "termini e condizioni",
-    "privacy": "l’informativa sulla privacy",
-    "rich": "Accetto i <terms>termini e condizioni</terms> e <privacy>l’informativa sulla privacy</privacy>."
+    "privacy": "informativa privacy",
+    "rich": "Accetto i <terms>termini e condizioni</terms> nonché l'<privacy>informativa privacy</privacy>."
   },
 
   "actions": {
@@ -34,8 +38,8 @@
   },
 
   "messages": {
-    "successTitle": "Registrazione avvenuta con successo",
-    "successBody": "Benvenuto a bordo! Ti abbiamo inviato un’email di conferma a",
+    "successTitle": "Registrazione completata",
+    "successBody": "Benvenuto a bordo! Ti abbiamo inviato un'email di conferma a",
     "successFollowUp": "Puoi chiudere questa finestra. Ti contatteremo a breve.",
     "errorTitle": "Qualcosa è andato storto",
     "errorBody": "Non siamo riusciti a completare la registrazione. Riprova.",
@@ -49,7 +53,7 @@
     "emailInvalid": "Inserisci un indirizzo email valido.",
     "emailsDontMatch": "Le email non coincidono.",
     "emailExists": "Questa email è già registrata.",
-    "passwordTooShort": "La password deve avere almeno 6 caratteri.",
+    "passwordPolicy": "La password deve essere 8–72 caratteri, includere maiuscole, minuscole e un numero, e non contenere spazi.",
     "phoneInvalid": "Inserisci un numero di telefono valido.",
     "termsRequired": "Devi accettare i termini per continuare."
   }

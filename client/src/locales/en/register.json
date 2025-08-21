@@ -13,7 +13,11 @@
     },
     "email": { "label": "Email *", "placeholder": "name@example.com" },
     "emailConfirm": { "label": "Confirm your email *", "placeholder": "name@example.com" },
-    "password": { "label": "Password *", "placeholder": "Min. 6 characters" }
+    "password": {
+      "label": "Password *",
+      "placeholder": "Min. 8 chars, upper/lower/number, no spaces",
+      "hint": "8–72 characters, at least one uppercase, one lowercase and one number. No spaces."
+    }
   },
 
   "terms": {
@@ -49,7 +53,7 @@
     "emailInvalid": "Enter a valid email address.",
     "emailsDontMatch": "Email addresses don't match.",
     "emailExists": "This email is already registered.",
-    "passwordTooShort": "Password must be at least 6 characters.",
+    "passwordPolicy": "Password must be 8–72 characters, include uppercase, lowercase and a number, and contain no spaces.",
     "phoneInvalid": "Enter a valid phone number.",
     "termsRequired": "You must accept the terms to continue."
   }

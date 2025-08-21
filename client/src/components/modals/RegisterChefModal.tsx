@@ -25,11 +25,16 @@ import ReactCountryFlag from "react-country-flag";
 import { Heading, Paragraph } from "@/components/ui";
 import { useTranslation } from "@/utils/useTranslation";
 
+/* ---------------- Password policy (module scope, no hook deps) ---------------- */
+const PASSWORD_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\s]{8,72}$/;
+const PASSWORD_POLICY_FALLBACK =
+  "Password must be 8–72 characters, include uppercase, lowercase and a number, and contain no spaces.";
+
 /* ---------------- API config ---------------- */
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") ||
   "http://localhost:4000";
-const REG_ENDPOINT = `${API_BASE}/api/registration`;
+const REG_ENDPOINT = `${API_BASE}/api/chefs/register`;
 
 /* ---------------- Types & helpers (no `any`) ---------------- */
 type ApiErrorData = { code?: string; message?: string };
@@ -37,10 +42,8 @@ type ApiErrorData = { code?: string; message?: string };
 function isApiErrorData(x: unknown): x is ApiErrorData {
   if (typeof x !== "object" || x === null) return false;
   const maybe = x as Record<string, unknown>;
-  const okCode =
-    maybe.code === undefined || typeof maybe.code === "string";
-  const okMsg =
-    maybe.message === undefined || typeof maybe.message === "string";
+  const okCode = maybe.code === undefined || typeof maybe.code === "string";
+  const okMsg = maybe.message === undefined || typeof maybe.message === "string";
   return okCode && okMsg;
 }
 
@@ -270,7 +273,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
       email.trim() &&
       email2.trim() &&
       email === email2 &&
-      password.length >= 6 &&
+      PASSWORD_RE.test(password) && // strong password
       agree &&
       !isSubmitting,
     [name, surname, phoneNumber, email, email2, password, agree, isSubmitting]
@@ -284,7 +287,13 @@ export default function RegisterChefModal({ open, onClose }: Props) {
     const emailRe = /\S+@\S+\.\S+/;
     if (!emailRe.test(email)) return t("errors.emailInvalid");
     if (email !== email2) return t("errors.emailsDontMatch");
-    if (password.length < 6) return t("errors.passwordTooShort");
+    if (!PASSWORD_RE.test(password)) {
+      // preferă i18n dacă există cheia; altfel fallback clar
+      const maybePolicy = t("errors.passwordPolicy");
+      return maybePolicy && maybePolicy !== "errors.passwordPolicy"
+        ? maybePolicy
+        : PASSWORD_POLICY_FALLBACK;
+    }
     if (!agree) return t("errors.termsRequired");
     return t("messages.errorBody");
   };
@@ -444,6 +453,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
                         onChange={(e) => setName(e.target.value)}
                         placeholder={t("fields.name.placeholder")}
                         required
+                        minLength={2}
                         disabled={isSubmitting}
                       />
                     </div>
@@ -459,15 +469,14 @@ export default function RegisterChefModal({ open, onClose }: Props) {
                         onChange={(e) => setSurname(e.target.value)}
                         placeholder={t("fields.surname.placeholder")}
                         required
+                        minLength={2}
                         disabled={isSubmitting}
                       />
                     </div>
 
                     {/* Phone group */}
                     <div>
-                      <span className={labelBase}>
-                        {t("fields.phone.label")}
-                      </span>
+                      <span className={labelBase}>{t("fields.phone.label")}</span>
 
                       <div className="flex items-center gap-2">
                         {/* Country picker trigger (dark) */}
@@ -553,7 +562,7 @@ export default function RegisterChefModal({ open, onClose }: Props) {
                           onChange={(e) => setPassword(e.target.value)}
                           className="pr-10"
                           required
-                          minLength={6}
+                          minLength={8}
                           disabled={isSubmitting}
                         />
                         <button
@@ -561,15 +570,17 @@ export default function RegisterChefModal({ open, onClose }: Props) {
                           onClick={() => setShowPass((s) => !s)}
                           className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-200"
                           aria-label={
-                            showPass
-                              ? t("actions.hidePassword")
-                              : t("actions.showPassword")
+                            showPass ? t("actions.hidePassword") : t("actions.showPassword")
                           }
                           disabled={isSubmitting}
                         >
                           {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
+                      {/* optional hint: ținut în componentă, nu depinde de i18n */}
+                      <p className="mt-1 text-xs text-neutral-400">
+                        8–72 chars, include uppercase, lowercase and a number, no spaces.
+                      </p>
                     </div>
 
                     {/* Terms — gold bg + black check when selected */}
@@ -634,18 +645,14 @@ export default function RegisterChefModal({ open, onClose }: Props) {
                           : "bg-neutral-800 text-neutral-500 cursor-not-allowed")
                       }
                     >
-                      {isSubmitting
-                        ? t("actions.submitting")
-                        : t("actions.register")}
+                      {isSubmitting ? t("actions.submitting") : t("actions.register")}
                     </button>
 
                     {submitKind && (
                       <p
                         className={
                           "mt-2 text-center text-sm " +
-                          (submitKind === "success"
-                            ? "text-emerald-400"
-                            : "text-red-400")
+                          (submitKind === "success" ? "text-emerald-400" : "text-red-400")
                         }
                         role="status"
                         aria-live="polite"
