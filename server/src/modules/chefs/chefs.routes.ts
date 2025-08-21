@@ -1,10 +1,14 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
+
 import { registerChef } from "./chefs.controller";
 import { changePasswordController } from "./changePassword.controller";
+import { LoginChefController } from "./login.controller";
+import { MeChefController } from "./me.controller";
+
 import { authJwtMiddleware } from "../../middleware/authJwtMiddleware";
 import { validate } from "../../middleware/validate";
 import { changePasswordSchema } from "./password.policy";
-import rateLimit from "express-rate-limit";
 
 const changePwdLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
@@ -23,7 +27,13 @@ export const chefsRouter = Router();
 // Register
 chefsRouter.post("/register", registerChef);
 
-// Change password
+// Login
+chefsRouter.post("/login", LoginChefController);
+
+// Me (autentificat)
+chefsRouter.get("/me", authJwtMiddleware, MeChefController);
+
+// Change password (autentificat + limitat)
 chefsRouter.put(
   "/change-password",
   authJwtMiddleware,

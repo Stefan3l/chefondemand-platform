@@ -8,13 +8,11 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 // import routes
-// import chefsRoutes from "./routes/chefs";
-import authRoutes from "./routes/auth.routes";
 import { chefsRouter } from "./modules/chefs/chefs.routes";
 
 
-import healthRoutes from "./routes/health";
-import inquiriesRoutes from "./routes/inquiries";
+import { healthRouter } from "./modules/health/health";
+import { inquiriesRouter } from "./modules/inquiries/inquiries.routes";
 
 import { loadEnv } from "./lib/env";
 import { notFound } from "./middleware/notFound";
@@ -36,9 +34,7 @@ app.use(
 app.use(compression()); // Compresses response bodies for better performance
 app.use(express.json({ limit: "1mb" })); // Parse incoming JSON requests with body limit
 
-// Route for chef registration
-// app.use("/api", chefsRoutes);
-app.use("/api", authRoutes);
+
 app.use("/api/chefs", chefsRouter); // Chef-related routes
 
 // Rate limiter to prevent abuse and brute-force attacks
@@ -52,8 +48,8 @@ app.use(
 );
 
 /* -------- API routes -------- */
-app.use("/health", healthRoutes);
-app.use("/api/inquiries", inquiriesRoutes);
+app.use("/health", healthRouter);
+app.use("/api/inquiries", inquiriesRouter);
 
 /* -------- 404 handler & error handler -------- */
 app.use(notFound); // Handle non-existing routes
