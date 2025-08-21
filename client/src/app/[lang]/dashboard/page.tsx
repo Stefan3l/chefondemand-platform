@@ -3,7 +3,7 @@
 import ChefDashboardShell from '@/components/dashboard/ChefDashboardShell';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Circle, Inbox, Send, CheckCircle, type LucideIcon } from 'lucide-react';
+import { CheckCircle2, Circle, Inbox, Send, CheckCircle } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
 import { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,38 +12,47 @@ import { api } from '@/lib/axios';
 const GOLD = '#C7AE6A';
 
 type Step  = { text: string; done: boolean };
-type StatItem = { label: string; value: number; icon: LucideIcon; iconBg: string; iconColor: string };
+// type StatItem = { label: string; value: number; icon: LucideIcon; iconBg: string; iconColor: string };
 
 export default function DashboardPage() {
   const router = useRouter();
   const { t, locale } = useTranslation('dashboard');
   const dateLocale = locale === 'it' ? 'it-IT' : 'en-US';
 
-  const [selectedDate, setSelectedDate]   = useState<Date>(new Date());
-  const [showCalendar, setShowCalendar]   = useState<boolean>(false);
-  const [firstName, setFirstName]         = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // ✅ Guard + fetch
+  //  Guard + fetch
   useEffect(() => {
-    const stored = localStorage.getItem("loggedUser");
+    const loginPath = `/${locale}/login`;
+
+    const stored = localStorage.getItem('loggedUser');
     if (!stored) {
-      router.push('/login');
+      router.push(loginPath);
       return;
     }
 
     async function fetchMe() {
       try {
-        const res = await api.get('/api/chef/me');
+        setLoading(true);
+        // IMPORTANT: endpoint corect + cookie
+        const res = await api.get('/api/chefs/me', { withCredentials: true });
+        // backend: { id, firstName, lastName, email }
         setFirstName(res.data.firstName);
       } catch {
-        router.push('/login');
+        router.push(loginPath);
+      } finally {
+        setLoading(false);
       }
     }
 
     fetchMe();
-  }, [router]);
+  }, [router, locale]);
 
-  // Nu afișăm pagina până când avem numele (=> user valid)
+  // Poți afișa un mic placeholder cât timp verificăm sesiunea
+  if (loading) return null;
   if (!firstName) return null;
 
   const profileComplete = 62;
@@ -55,11 +64,11 @@ export default function DashboardPage() {
     { text: t('profile.steps.payments'),  done: false },
   ];
 
-  const stats: StatItem[] = [
-    { label: t('stats.received'), value: 0, icon: Inbox,       iconBg:'bg-[rgba(254,178,42,0.10)]', iconColor:'text-[#FEB22A]' },
-    { label: t('stats.sent'),     value: 0, icon: Send,        iconBg:'bg-[rgba(235,69,158,0.10)]', iconColor:'text-[#EB459E]' },
-    { label: t('stats.closed'),   value: 0, icon: CheckCircle, iconBg:'bg-[rgba(34,197,94,0.10)]',  iconColor:'text-[#22C55E]' },
-  ];
+  // const stats: StatItem[] = [
+  //   { label: t('stats.received'), value: 0, icon: Inbox,       iconBg:'bg-[rgba(254,178,42,0.10)]', iconColor:'text-[#FEB22A]' },
+  //   { label: t('stats.sent'),     value: 0, icon: Send,        iconBg:'bg-[rgba(235,69,158,0.10)]', iconColor:'text-[#EB459E]' },
+  //   { label: t('stats.closed'),   value: 0, icon: CheckCircle, iconBg:'bg-[rgba(34,197,94,0.10)]',  iconColor:'text-[#22C55E]' },
+  // ];
 
   const monthLabel = selectedDate.toLocaleDateString(dateLocale, { month: 'long', year: 'numeric' });
   const monthOnly  = selectedDate.toLocaleDateString(dateLocale, { month: 'long' });
@@ -147,10 +156,14 @@ export default function DashboardPage() {
         )}
 
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-          {stats.map((s) => (
+          {[
+            { label: t('stats.received'), value: 0, icon: Inbox,       iconBg:'bg-[rgba(254,178,42,0.10)]', iconColor:'text-[#FEB22A]' },
+            { label: t('stats.sent'),     value: 0, icon: Send,        iconBg:'bg-[rgba(235,69,158,0.10)]', iconColor:'text-[#EB459E]' },
+            { label: t('stats.closed'),   value: 0, icon: CheckCircle, iconBg:'bg-[rgba(34,197,94,0.10)]',  iconColor:'text-[#22C55E]' },
+          ].map((s) => (
             <div key={s.label} className="rounded-2xl border border-[#C7AE6A33] bg-neutral-900 p-4 hover:-translate-y-[2px] hover:bg-[#2D291F] hover:border-[#C7AE6A] transition-transform duration-200 ">
               <div className="flex items-center justify-center lg:justify-start gap-3">
-                <div className={`grid h-9 w-9 place-items-center rounded-full  ${s.iconBg} ${s.iconColor}`} >
+                <div className={`grid h-9 w-9 place-items-center rounded-full ${s.iconBg} ${s.iconColor}`}>
                   <s.icon size={18} />
                 </div>
                 <div className="flex items-center gap-2">

@@ -35,54 +35,60 @@ export default function LoginChefModal({ open, onClose }: Props) {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrMsg(null);
+  e.preventDefault();
+  setErrMsg(null);
 
-    const v = validate();
-    if (v) {
-      setErrMsg(v);
-      return;
-    }
+  const v = validate();
+  if (v) { setErrMsg(v); return; }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      // fac login (ex: {token, name, email})
-      const res = await api.post("/api/chef/login", { email, password });
+    //  login pe ruta nouă + cookie
+    const res = await api.post(
+      "/api/chefs/login",
+      { email, password },
+      { withCredentials: true }
+    );
 
-      //  salvăm datele utile în localStorage
+    // backend-ul întoarce { message, chef: { id, email, firstName, lastName } }
+    const chef = res.data?.chef;
+    if (chef) {
       localStorage.setItem(
         "loggedUser",
         JSON.stringify({
-          name: res.data.firstName, 
-          email: res.data.email,
-          token: res.data.token,
+          id: chef.id,
+          name: chef.firstName,   
+          email: chef.email
+         
         })
       );
-
-      if (remember) {
-        localStorage.setItem("cod_email_hint", email);
-      } else {
-        localStorage.removeItem("cod_email_hint");
-      }
-
-      router.push(`/${lang}/dashboard`);
-      onClose();
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        const apiMsg = (err.response?.data as { error?: string } | undefined)?.error;
-        setErrMsg(
-          apiMsg && apiMsg.toLowerCase().includes("invalid")
-            ? t("errors.invalid_credentials")
-            : t("errors.server_error")
-        );
-      } else {
-        setErrMsg(t("errors.server_error"));
-      }
-    } finally {
-      setLoading(false);
     }
-  };
+
+    if (remember) {
+      localStorage.setItem("cod_email_hint", email);
+    } else {
+      localStorage.removeItem("cod_email_hint");
+    }
+
+    router.push(`/${lang}/dashboard`);
+    onClose();
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      const apiMsg = (err.response?.data as { error?: string } | undefined)?.error;
+      setErrMsg(
+        apiMsg && apiMsg.toLowerCase().includes("invalid")
+          ? t("errors.invalid_credentials")
+          : t("errors.server_error")
+      );
+    } else {
+      setErrMsg(t("errors.server_error"));
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center" role="dialog" aria-modal="true">
