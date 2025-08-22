@@ -1,3 +1,4 @@
+// src/components/StickyHeader.tsx
 'use client';
 
 import Image from 'next/image';
@@ -7,20 +8,25 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Search, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/utils/useTranslation';
 import { Button } from '@/components/ui';
+import ChangePasswordModal from '@/components/modals/ChangePasswordModal';
 
 interface StickyHeaderProps {
   base: string;
   firstName: string;
-  t: (key: string) => string;
 }
 
-export default function StickyHeader({ base, firstName, t }: StickyHeaderProps) {
+export default function StickyHeader({ base, firstName }: StickyHeaderProps) {
+  // dashboard: nav, header.* etc.
+  const { t } = useTranslation('dashboard');
+  // logout modal strings
   const { t: tLogout } = useTranslation('logoutModal');
+
   const pathname = usePathname();
   const router   = useRouter();
 
   const [userOpen, setUserOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [changePwdOpen, setChangePwdOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // închidem dropdown la click în afară
@@ -46,6 +52,12 @@ export default function StickyHeader({ base, firstName, t }: StickyHeaderProps) 
   const handleLogout = () => {
     localStorage.removeItem("loggedUser");
     router.push('/login');
+  };
+
+  // 🔒 Open Change Password modal
+  const openChangePassword = () => {
+    setUserOpen(false);
+    setChangePwdOpen(true);
   };
 
   return (
@@ -89,13 +101,20 @@ export default function StickyHeader({ base, firstName, t }: StickyHeaderProps) 
 
             {/* DROPDOWN */}
             {userOpen && (
-              <div className="absolute right-4 lg:right-6 mt-54 w-48 rounded-xl border border-white/10 bg-neutral-900 px-2 py-4 z-50 hover:border-[#C7AE6A33]">
+              <div className="absolute right-4 lg:right-6 mt-56 w-48 rounded-xl border border-white/10 bg-neutral-900 px-2 py-4 z-50 hover:border-[#C7AE6A33]">
                 <Link href={`${base}/account`} className="block rounded-lg px-3 py-2 text-sm text-neutral-200 hover:bg-white/5">
-                  Il mio account
+                  {t('nav.account')}
                 </Link>
-                <Link href={`${base}/change-password`} className="block rounded-lg px-3 py-2 text-sm text-neutral-200 hover:bg-white/5">
-                  Cambio password
-                </Link>
+
+                {/* 👉 Deschide modalul Change Password */}
+                <button
+                  type="button"
+                  onClick={openChangePassword}
+                  className="w-full text-left rounded-lg px-3 py-2 text-sm text-neutral-200 hover:bg-white/5"
+                >
+                  {t('nav.changePassword')}
+                </button>
+
                 <button
                   onClick={() => setConfirmOpen(true)}
                   className="w-full text-left rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-white/5"
@@ -111,27 +130,22 @@ export default function StickyHeader({ base, firstName, t }: StickyHeaderProps) 
       {/* CONFIRM LOGOUT MODAL */}
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="rounded-xl bg-neutral-900 border border-white/10 hover:border-[#C7AE6A33] px-4 lg:px-8 py-10 text-center  space-y-6">
-                      <p className="text-md lg:text-xl text-center text-neutral-200">{tLogout("confirm_title")}</p>
-                      <div className="flex justify-between gap-4 lg:gap-10 mt-10">
-                        <Button
-                          onClick={handleLogout}
-                          className="text-md"
-                        >
-                          {tLogout("yes")}
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={() => setConfirmOpen(false)}
-                          className="text-md"
-                        >
-                          {tLogout("no")}
-                          
-                        </Button>
-                      </div>
-                    </div>
+          <div className="rounded-xl bg-neutral-900 border border-white/10 hover:border-[#C7AE6A33] px-4 lg:px-8 py-10 text-center space-y-6">
+            <p className="text-md lg:text-xl text-center text-neutral-200">{tLogout("confirm_title")}</p>
+            <div className="flex justify-between gap-4 lg:gap-10 mt-10">
+              <Button onClick={handleLogout} className="text-md">
+                {tLogout("yes")}
+              </Button>
+              <Button variant="secondary" onClick={() => setConfirmOpen(false)} className="text-md">
+                {tLogout("no")}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* CHANGE PASSWORD MODAL */}
+      <ChangePasswordModal open={changePwdOpen} onClose={() => setChangePwdOpen(false)} />
     </>
   );
 }

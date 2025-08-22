@@ -10,6 +10,8 @@ import itDashboard from '@/locales/it/dashboard.json';
 import enDashboard from '@/locales/en/dashboard.json';
 import itLogoutModal from '@/locales/it/logoutModal.json';
 import enLogoutModal from '@/locales/en/logoutModal.json';
+import itChangePassword from '@/locales/it/changePassword.json';
+import enChangePassword from '@/locales/en/changePassword.json';
 
 export type NamespaceData = Record<string, string>;
 
@@ -19,14 +21,16 @@ export const translations = {
     register: itRegister,
     login: itLogin,
     dashboard: itDashboard,
-    logoutModal: itLogoutModal
+    logoutModal: itLogoutModal,
+    changePassword: itChangePassword
   },
   en: {
     common: enCommon,
     register: enRegister,
     login: enLogin,
     dashboard: enDashboard,
-    logoutModal: enLogoutModal
+    logoutModal: enLogoutModal,
+    changePassword: enChangePassword
   },
 } as const;
 

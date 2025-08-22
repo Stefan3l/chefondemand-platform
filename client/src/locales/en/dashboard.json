@@ -13,7 +13,9 @@
     "help": "Help & Support",
     "logout": "Logout",
     "home": "Home",
-    "more": "More"
+    "more": "More",
+    "account": "My account",
+    "changePassword": "Change password"
   },
   "header": {
     "welcome": "Welcome,",
