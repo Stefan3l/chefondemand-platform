@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { changeChefPassword } from "./changePassword.service";
-import { AppError } from "../../utils/AppError";
-import { ChangePasswordDTO } from "./password.policy";
+import { changeChefPassword } from "../changePassword.service";
+import { AppError } from "../../../utils/AppError";
+import { ChangePasswordDTO } from "../validators/password.policy";
 
 export async function changePasswordController(req: Request, res: Response, next: NextFunction) {
   try {

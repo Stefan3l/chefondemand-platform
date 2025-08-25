@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Chef {
@@ -19,5 +20,40 @@ model Chef {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  profile ChefProfile? @relation("ChefToProfile")
+
   @@unique([phonePrefix, phoneNumber], name: "unique_phone")
+}
+
+// Tabella ChefPro
+model ChefProfile {
+  id String @id @default(cuid())
+
+  // cheie străină unică (1-la-1)
+  chefId String @unique
+  chef   Chef   @relation("ChefToProfile", fields: [chefId], references: [id], onDelete: Cascade)
+
+  // Foto profilo
+  profileImageUrl  String? @db.VarChar(512)
+  profileImagePath String? @db.VarChar(512)
+  profileImageMime String? @db.VarChar(100)
+
+  // Bio (max 240)
+  bio String? @db.VarChar(240)
+
+  // Website
+  website String? @db.VarChar(255)
+
+  // Array-uri (PostgreSQL)
+  languages String[] // opțional; salvezi [] din API dacă vrei
+  skills    String[] // max 5 — validăm în API
+
+  // Locație / arie
+  address         String? @db.VarChar(255)
+  region          String? @db.VarChar(100)
+  country         String? @db.Char(2) // ISO (ex. "IT", "BE")
+  serviceRadiusKm Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

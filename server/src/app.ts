@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 // import routes
-import { chefsRouter } from "./modules/chefs/chefs.routes";
+import { chefsRouter } from "./modules/chefs/routes/chefs.routes";
 
 
 import { healthRouter } from "./modules/health/health";

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { passwordSchema } from "./password.policy";
+import { passwordSchema } from "./validators/password.policy";
 
 export const createChefSchema = z.object({
   firstName: z.string().trim().min(2).max(60),
