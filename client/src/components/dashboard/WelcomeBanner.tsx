@@ -25,11 +25,11 @@ export default function WelcomeBanner({ firstName }: { firstName: string }) {
 
   return (
     <div className="my-6 rounded-xl bg-[#1E1B15] border border-[#C7AE6A33]  flex flex-col justify-center lg:flex-row lg:justify-between items-center relative">
-      {/* X button (visible only on mobile) */}
+      
       <button
         type="button"
         onClick={() => setVisible(false)}
-        className="absolute top-2 right-2 p-1 rounded-md text-neutral-400 hover:text-white transition lg:hidden"
+        className="absolute top-2 right-2 p-1 rounded-md text-neutral-400 hover:text-white transition "
         aria-label="Close"
       >
         <X size={18} />
