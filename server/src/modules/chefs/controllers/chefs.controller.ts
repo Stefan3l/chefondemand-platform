@@ -1,10 +1,10 @@
 // src/modules/chefs/chefs.controller.ts
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
-import { prisma } from "../../prisma";
-import { createChefSchema } from "./chef.schema";
+import { prisma } from "../../../prisma";
+import { createChefSchema } from "../validators/chef.schema";
 import { ZodError } from "zod";
-import { AppError } from "../../utils/AppError";
+import { AppError } from "../../../utils/AppError";
 
 // Registrazione chef
 export async function registerChef(req: Request, res: Response, next: NextFunction) {

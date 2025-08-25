@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { changeChefPassword } from "../changePassword.service";
+import { changeChefPassword } from "../services/changePassword.service";
 import { AppError } from "../../../utils/AppError";
 import { ChangePasswordDTO } from "../validators/password.policy";
 

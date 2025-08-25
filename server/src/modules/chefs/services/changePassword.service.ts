@@ -1,6 +1,6 @@
-import { prisma } from "../../prisma";
+import { prisma } from "../../../prisma";
 import bcrypt from "bcrypt";
-import { AppError } from "../../utils/AppError";
+import { AppError } from "../../../utils/AppError";
 
 type Input = {
   userId: string;

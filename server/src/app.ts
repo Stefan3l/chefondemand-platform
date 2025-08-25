@@ -6,9 +6,11 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 // import routes
-import { chefsRouter } from "./modules/chefs/routes/chefs.routes";
+import chefsRouter from "./modules/chefs/routes/chefs.routes";
+
 
 
 import { healthRouter } from "./modules/health/health";
@@ -33,9 +35,11 @@ app.use(
 );
 app.use(compression()); // Compresses response bodies for better performance
 app.use(express.json({ limit: "1mb" })); // Parse incoming JSON requests with body limit
+app.use("/static", express.static(path.join(process.cwd(), "uploads")));
 
 
 app.use("/api/chefs", chefsRouter); // Chef-related routes
+
 
 // Rate limiter to prevent abuse and brute-force attacks
 app.use(

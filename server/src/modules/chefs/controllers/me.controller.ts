@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { prisma } from "../../prisma";
-import { AppError } from "../../utils/AppError";
+import { prisma } from "../../../prisma";
+import { AppError } from "../../../utils/AppError";
 
 export async function MeChefController(req: Request, res: Response, next: NextFunction) {
   try {

@@ -1,10 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { sign, type Secret } from "jsonwebtoken";
-import { prisma } from "../../prisma";
-import { loginSchema } from "./login.schema";
-import { AppError } from "../../utils/AppError";
-import { JWT_COOKIE_NAME, getJwtExpiresInSeconds, getCookieSameSite } from "../../config/auth";
+import { prisma } from "../../../prisma";
+import { loginSchema } from "../validators/login.schema";
+import { AppError } from "../../../utils/AppError";
+import { JWT_COOKIE_NAME, getJwtExpiresInSeconds, getCookieSameSite } from "../../../config/auth";
 
 export async function LoginChefController(req: Request, res: Response, next: NextFunction) {
   try {
