@@ -21,6 +21,7 @@ import DashboardSidebar from './DashboardSidebar';
 interface Props {
   children: React.ReactNode;
   userName?: string;
+  
 }
 
 export default function ChefDashboardShell({ children, userName = 'Stefanel Mihaila' }: Props) {
@@ -71,7 +72,7 @@ export default function ChefDashboardShell({ children, userName = 'Stefanel Miha
       {/* Main column */}
       <div className="flex h-full flex-col md:pl-64">
         {/* Sticky header */}
-        <StickyHeader base={base} firstName={firstName} t={t} />
+        <StickyHeader base={base} firstName={firstName}  />
       
         
 

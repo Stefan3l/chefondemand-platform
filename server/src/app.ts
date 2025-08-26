@@ -8,11 +8,8 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import path from "path";
 
-// import routes
+// routes
 import chefsRouter from "./modules/chefs/routes/chefs.routes";
-
-
-
 import { healthRouter } from "./modules/health/health";
 import { inquiriesRouter } from "./modules/inquiries/inquiries.routes";
 
@@ -24,39 +21,66 @@ dotenv.config();
 const env = loadEnv();
 const app = express();
 
-/* -------- Security & performance middlewares -------- */
-app.use(helmet()); // Sets various HTTP headers for app security
-app.use(cookieParser()); // Parses cookies from the request
+/* ───────────────── Sicurezza & performance ───────────────── */
+// ⚠️ Configura helmet per consentire le risorse cross-origin (immagini su porta 4000)
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // <- FIX CORP
+    crossOriginEmbedderPolicy: false, // utile in dev per evitare "require-corp"
+  })
+);
+
+app.use(cookieParser());
+
+// CORS per XHR/fetch (non influisce su CORP, ma serve per cookie/fetch)
 app.use(
   cors({
-    origin: env.CORS_ORIGIN, // Allowed origin(s) for CORS
-    credentials: true
+    origin: env.CORS_ORIGIN, // es.: "http://localhost:3000"
+    credentials: true,
   })
 );
-app.use(compression()); // Compresses response bodies for better performance
-app.use(express.json({ limit: "1mb" })); // Parse incoming JSON requests with body limit
-app.use("/static", express.static(path.join(process.cwd(), "uploads")));
 
+app.use(compression());
+app.use(express.json({ limit: "1mb" }));
 
-app.use("/api/chefs", chefsRouter); // Chef-related routes
+/* ───────────────── Static /static → uploads ───────────────── */
+// mappa /static alla cartella 'uploads' e aggiungi CORP cross-origin
+const uploadsRoot = path.join(process.cwd(), "uploads");
+app.use(
+  "/static",
+  (req, res, next) => {
+    // permette l'embed da origin diversa (3000 -> 4000)
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    // opzionale ma utile in dev per evitare dubbi
+    if (env.CORS_ORIGIN) {
+      res.setHeader("Access-Control-Allow-Origin", env.CORS_ORIGIN);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+    next();
+  },
+  express.static(uploadsRoot, {
+    setHeaders: (res) => {
+      // caching gradevole per le immagini
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    },
+  })
+);
 
-
-// Rate limiter to prevent abuse and brute-force attacks
+/* ───────────────── API ───────────────── */
+app.use("/api/chefs", chefsRouter);
 app.use(
   rateLimit({
-    windowMs: 60_000, // 1 minute
-    max: 120,         // Limit each IP to 120 requests per windowMs
+    windowMs: 60_000,
+    max: 120,
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
   })
 );
-
-/* -------- API routes -------- */
 app.use("/health", healthRouter);
 app.use("/api/inquiries", inquiriesRouter);
 
-/* -------- 404 handler & error handler -------- */
-app.use(notFound); // Handle non-existing routes
-app.use(errorHandler); // Centralized error handling
+/* ───────────────── Error handling ───────────────── */
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

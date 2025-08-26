@@ -1,12 +1,19 @@
-// Persistă sidebar + header pentru toate paginile din (dashboard)
-import DashboardLayoutClient from "@/components/dashboard/DashboardLayoutClient";
 
-export default function DashboardLayout({
+import React from "react";
+import DashboardLayoutClient from "@/components/dashboard/DashboardLayoutClient";
+import { MeProvider } from "@/context/me";
+
+type Params = { lang: string };
+
+export default async function DashboardLayout({
   children,
-  params: { lang },
+  params,
 }: {
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<Params>; // ← params e Promise
 }) {
-  return <DashboardLayoutClient lang={lang}>{children}</DashboardLayoutClient>;
+  const { lang } = await params;   // ← așteaptă params
+  return( <MeProvider>
+      <DashboardLayoutClient lang={lang}>{children}</DashboardLayoutClient>
+    </MeProvider>)
 }
