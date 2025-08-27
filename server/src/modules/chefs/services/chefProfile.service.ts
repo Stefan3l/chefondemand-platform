@@ -1,4 +1,4 @@
-
+import fs from "fs/promises";
 import { prisma } from "../../../lib/prisma";
 import { ChefProfileInput } from "../validators/chefProfile.schema";
 
@@ -25,15 +25,28 @@ export async function upsertByChefId(chefId: string, input: ChefProfileInput) {
   });
 }
 
-// Restituisce il profilo "safe" (senza path interno) dopo l'upload
-export async function setProfilePhoto(chefId: string, data: {
-  url: string; path: string; mime: string;
-}) {
-  return prisma.chefProfile.upsert({
+/**
+ * Imposta la foto profilo:
+ * - salva url/path/mime nuovi,
+ * - dopo upsert, se il path precedente è diverso, elimina il vecchio file dal filesystem.
+ * Ritorna sempre un oggetto "safe" per il frontend (senza path interno).
+ */
+export async function setProfilePhoto(
+  chefId: string,
+  data: { url: string; path: string; mime: string }
+) {
+  // 1) leggi il path precedente (se esiste)
+  const prev = await prisma.chefProfile.findUnique({
+    where: { chefId },
+    select: { profileImagePath: true },
+  });
+
+  // 2) aggiorna/crea il profilo con i nuovi dati
+  const result = await prisma.chefProfile.upsert({
     where: { chefId },
     update: {
       profileImageUrl: data.url,
-      profileImagePath: data.path,   // salvato ma NON esposto
+      profileImagePath: data.path, // salvato ma NON esposto
       profileImageMime: data.mime,
     },
     create: {
@@ -44,7 +57,7 @@ export async function setProfilePhoto(chefId: string, data: {
       languages: [], // profilo creato a step
       skills: [],
     },
-    //  selezione campi "safe" per il frontend
+    // selezione campi "safe" per il frontend
     select: {
       id: true,
       chefId: true,
@@ -62,6 +75,16 @@ export async function setProfilePhoto(chefId: string, data: {
       updatedAt: true,
     },
   });
+
+  // 3) elimina il vecchio file, se diverso dal nuovo
+  try {
+    const oldPath = prev?.profileImagePath;
+    if (oldPath && oldPath !== data.path) {
+      await fs.unlink(oldPath);
+    }
+  } catch {
+    // non bloccare il flusso se la rimozione fallisce (ENOENT, permessi, ecc.)
+  }
+
+  return result;
 }
-
-

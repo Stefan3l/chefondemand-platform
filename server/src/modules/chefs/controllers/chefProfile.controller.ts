@@ -1,4 +1,4 @@
-
+import fs from "fs/promises";
 import { Request, Response, NextFunction } from "express";
 import path from "path";
 import { AppError } from "../../../utils/AppError";
@@ -26,7 +26,9 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
     if (!profile) return res.status(404).json({ ok: false, message: "Profilo inesistente" });
 
     res.json({ ok: true, data: profile });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 }
 
 /**
@@ -43,7 +45,9 @@ export async function upsertProfile(req: Request, res: Response, next: NextFunct
     const result = await profileService.upsertByChefId(chefId, parsed);
 
     res.json({ ok: true, data: result });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 }
 
 /**
@@ -51,6 +55,7 @@ export async function upsertProfile(req: Request, res: Response, next: NextFunct
  * Carica/sostituisce la foto profilo (campo form-data: "photo").
  */
 export async function uploadProfilePhoto(req: Request, res: Response, next: NextFunction) {
+  let uploadedPath: string | undefined;
   try {
     const { chefId } = req.params;
     assertSameUserOrThrow(req, chefId);
@@ -58,10 +63,12 @@ export async function uploadProfilePhoto(req: Request, res: Response, next: Next
     const file = (req as any).file as Express.Multer.File | undefined;
     if (!file) throw new AppError("Immagine mancante", 400);
 
+    uploadedPath = file.path; // per cleanup in caso di errore successivo
+
     const rel = path.join("profiles", chefId, file.filename).replace(/\\/g, "/");
     const publicUrl = `/static/${rel}`;
 
-    // ora service ritorna già un profilo "safe"
+    // service ritorna un profilo "safe" (senza path interno)
     const profile = await profileService.setProfilePhoto(chefId, {
       url: publicUrl,
       path: file.path,
@@ -71,8 +78,17 @@ export async function uploadProfilePhoto(req: Request, res: Response, next: Next
     return res.json({
       ok: true,
       message: "Foto profilo aggiornata",
-      data: profile, //  oggetto safe (senza path interno)
+      data: profile, // oggetto safe
     });
-  } catch (err) { next(err); }
+  } catch (err) {
+    // se qualcosa fallisce dopo che Multer ha scritto il file, rimuovi il nuovo file
+    if (uploadedPath) {
+      try {
+        await fs.unlink(uploadedPath);
+      } catch {
+        // ignora ENOENT / errori minori
+      }
+    }
+    next(err);
+  }
 }
-
