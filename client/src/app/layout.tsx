@@ -1,5 +1,6 @@
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import "react-image-crop/dist/ReactCrop.css";
 import { ThemeProvider } from "@/components/common/theme-provider";
 
 const poppins = Poppins({

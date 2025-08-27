@@ -13,11 +13,11 @@ const buttonVariants = tv({
   variants: {
     variant: {
       primary: [
-        'bg-[#C7AE6A] text-black font-semibold hover:bg-[#B29A59]',
+        'bg-[#C7AE6A] text-black font-semibold hover:bg-[#B29A59] flex justify-center',
         'hover:shadow-[0_8px_25px_rgba(199,174,106,0.5)]' // box-shadow custom la hover
       ].join(' '),
       secondary:
-        'bg-[#171717] text-gray-300 border-2 border-[#28261F] hover:border-[#C7AE6A33] hover:text-[#C7AE6A]',
+        'bg-[#171717] text-gray-300 border-2 border-[#28261F] hover:border-[#C7AE6A33] hover:text-[#C7AE6A] flex justify-center',
       ghost: 'bg-transparent text-gray-200 hover:bg-white/5'
     },
     size: {

@@ -3,6 +3,7 @@
    ======================= */
 @import 'tailwindcss';
 
+
 /* Activează varianta dark pentru toate elementele */
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -2,17 +2,18 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import ReactCrop, { Crop } from "react-image-crop";
+// Importa il CSS di react-image-crop a livello globale (es. in app/layout.tsx):
+// import "react-image-crop/dist/ReactCrop.css";
+
 import { api } from "@/lib/axios";
-import { Button } from "@/components/ui";
+import { Button, Heading } from "@/components/ui";
 import { useMe } from "@/context/me";
-import { useTranslation } from "@/utils/useTranslation"; // ← presupunând hook-ul tău existent
-import { Heading } from '@/components/ui';
+import { useTranslation } from "@/utils/useTranslation";
 
-/** Base URL dell'API per rendere assoluti i path /static/... */
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-const toAbsolute = (u: string) => (u.startsWith("http") ? u : `${API_BASE}${u}`);
-
-const PROFILE_UPLOAD_FIELD = "photo"; // ⇠ backend: upload.single("photo")
+const toAbsolute = (u: string) => (u?.startsWith("http") ? u : `${API_BASE}${u}`);
+const PROFILE_UPLOAD_FIELD = "photo";
 
 type UploadResponse = {
   ok: boolean;
@@ -21,28 +22,38 @@ type UploadResponse = {
 };
 
 export default function PhotoProfile() {
-  // traduceri
   const { t } = useTranslation("photoProfile");
-
-  // ── Dati utente dal contesto (id + immagine corrente)
   const me = useMe();
   const chefId = me?.id ?? null;
 
+  // Immagine attuale dal server
   const [currentUrl, setCurrentUrl] = useState<string | null>(me?.profileImage ?? null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Anteprima "applicata" dopo il ritaglio (prima del salvataggio)
+  const [appliedPreview, setAppliedPreview] = useState<string | null>(null);
+
+  // File selezionato e sorgente per l'editor di crop
+  const [originalPreview, setOriginalPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+
+  // Stato del crop
+  const [crop, setCrop] = useState<Crop>({ unit: "px", x: 0, y: 0, width: 0, height: 0 });
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // UI e messaggi
   const [loading, setLoading] = useState(false);
+  const [needsSave, setNeedsSave] = useState(false); // evidenzia "Salva foto" dopo "Usa questo ritaglio"
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // sincronizează când se schimbă imaginea în context
+  // ──────────────────────────────────────────────────────────────────────────────
+  // Sincronizza l'immagine dal contesto se cambia
   useEffect(() => {
     setCurrentUrl(me?.profileImage ?? null);
   }, [me?.profileImage]);
 
-  // auto-dismiss pentru mesaje (3s)
+  // Auto-dismiss dei messaggi (3s)
   useEffect(() => {
     if (!error && !success) return;
     const id = setTimeout(() => {
@@ -52,23 +63,98 @@ export default function PhotoProfile() {
     return () => clearTimeout(id);
   }, [error, success]);
 
-  // ── Selezione file
+  // ──────────────────────────────────────────────────────────────────────────────
+  // Selezione file
   function onPickFile() {
     setError(null);
     setSuccess(null);
     inputRef.current?.click();
   }
 
+  // Cambio file: reset anteprime e stato "da salvare"
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
-    setFile(f);
-    setSuccess(null);
-    setError(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(f ? URL.createObjectURL(f) : null);
+
+    if (appliedPreview) URL.revokeObjectURL(appliedPreview);
+    setAppliedPreview(null);
+    setFile(null);
+
+    if (originalPreview) URL.revokeObjectURL(originalPreview);
+    setOriginalPreview(f ? URL.createObjectURL(f) : null);
+
+    setCrop({ unit: "px", x: 0, y: 0, width: 0, height: 0 });
+    setNeedsSave(false);
   }
 
-  // ── Upload
+  // Inizializza un crop elegante (80% centrato)
+  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+    const img = e.currentTarget;
+    imgRef.current = img;
+    const displayW = img.width;
+    const displayH = img.height;
+    const cw = Math.round(displayW * 0.8);
+    const ch = Math.round(displayH * 0.8);
+    const cx = Math.round((displayW - cw) / 2);
+    const cy = Math.round((displayH - ch) / 2);
+    setCrop({ unit: "px", x: cx, y: cy, width: cw, height: ch });
+  }
+
+  // Crea un Blob JPEG dal rettangolo di crop (coordinate in spazio naturale)
+  async function getCroppedBlobFromCrop(image: HTMLImageElement, cropRect: Crop): Promise<Blob> {
+    const w = Math.floor(cropRect.width ?? 0);
+    const h = Math.floor(cropRect.height ?? 0);
+    if (w <= 0 || h <= 0) throw new Error("Area di ritaglio non valida.");
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    const sx = Math.max(0, Math.floor((cropRect.x ?? 0) * scaleX));
+    const sy = Math.max(0, Math.floor((cropRect.y ?? 0) * scaleY));
+    const sw = Math.min(image.naturalWidth - sx, Math.floor(w * scaleX));
+    const sh = Math.min(image.naturalHeight - sy, Math.floor(h * scaleY));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, sw);
+    canvas.height = Math.max(1, sh);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas non supportato.");
+
+    ctx.drawImage(image, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    const blob: Blob = await new Promise((resolve) =>
+      canvas.toBlob((b) => resolve((b as Blob) ?? new Blob()), "image/jpeg", 0.92)
+    );
+    return blob;
+  }
+
+  // Applica il ritaglio e invita a salvare
+  async function onApplyCrop() {
+    if (!imgRef.current || !originalPreview) return;
+
+    try {
+      const blob = await getCroppedBlobFromCrop(imgRef.current, crop);
+      const croppedFile = new File([blob], "profile-cropped.jpg", { type: "image/jpeg" });
+
+      if (appliedPreview) URL.revokeObjectURL(appliedPreview);
+      const nextPrev = URL.createObjectURL(croppedFile);
+      setAppliedPreview(nextPrev);
+
+      setFile(croppedFile);
+      setNeedsSave(true); // attiva l'effetto "pulse" su Salva foto
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t("messages.errors.uploadFailed");
+      setError(msg);
+    }
+  }
+
+  // Annulla la sessione di crop corrente
+  function onCancelCrop() {
+    if (originalPreview) URL.revokeObjectURL(originalPreview);
+    setOriginalPreview(null);
+  }
+
+  // Upload su server
   async function onUpload() {
     if (!file) return setError(t("messages.errors.noFile"));
     if (!chefId) return setError(t("messages.errors.noId"));
@@ -79,20 +165,19 @@ export default function PhotoProfile() {
 
     try {
       const form = new FormData();
-      form.append(PROFILE_UPLOAD_FIELD, file); // nume câmp așteptat de backend
+      form.append(PROFILE_UPLOAD_FIELD, file);
 
       const res = await api.post<UploadResponse>(
         `/api/chefs/${chefId}/profile/photo`,
         form,
-        { validateStatus: () => true } // NU seta Content-Type manual
+        { validateStatus: () => true }
       );
 
       if (res.status < 200 || res.status >= 300 || !res.data?.ok) {
-        const msg = res.data?.message || `Upload failed (${res.status}).`;
+        const msg = res.data?.message || `Upload fallito (${res.status}).`;
         throw new Error(msg);
       }
 
-      // API întoarce un path relativ (/static/...), îl facem absolut + cache-busting
       const rel = res.data.data?.profileImageUrl ?? null;
       if (rel) {
         const abs = toAbsolute(rel);
@@ -101,77 +186,155 @@ export default function PhotoProfile() {
       }
 
       setSuccess(res.data.message ?? t("messages.success"));
+
+      // Pulizia locale e rimozione evidenziazione
+      setNeedsSave(false);
       setFile(null);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t("messages.errors.uploadFailed"));
+      if (originalPreview) URL.revokeObjectURL(originalPreview);
+      setOriginalPreview(null);
+      if (appliedPreview) {
+        URL.revokeObjectURL(appliedPreview);
+        setAppliedPreview(null);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t("messages.errors.uploadFailed");
+      setError(msg);
     } finally {
       setLoading(false);
     }
   }
 
-  const hasImage = Boolean(currentUrl);
-  const mainBtnLabel = hasImage ? t("editButton") : t("uploadButton");
+  // Sorgente mostrata nel pannello sinistro
+  const leftImage = appliedPreview || currentUrl || null;
+  const hasSaved = Boolean(currentUrl);
+  const mainBtnLabel = hasSaved ? t("editButton") : t("uploadButton");
 
-return (
-  // full viewport, fără scrollbar
-  <div className="min-h-dvh overflow-hidden bg-neutral-900 px-4 flex flex-col">
-    {/* Header: titlu stânga + linie sub titlu */}
-    <div className="py-4">
-      <Heading level="h2">{t("pageTitle")}</Heading>
-      <hr className="border-t border-[#C7AE6A33] mt-4" />
-    </div>
+  // Stato evidenziato per "Salva foto"
+  const saveEmphasis = needsSave
+    ? "ring-2 ring-[#C7AE6A] text-[#C7AE6A] animate-pulse shadow-[0_0_0_3px_rgba(199,174,106,0.25)]"
+    : "";
 
-    {/* Zona principală: cardul centrat pe pagină */}
-    <div className="flex-1 grid place-items-center">
-      <div className="w-full max-w-xl rounded-2xl border border-neutral-800 p-6 flex flex-col items-center gap-5 hover:border-[#C7AE6A33] transition-colors">
-        <h1 className="text-xl font-semibold">{t("title")}</h1>
+  return (
+    <div className="min-h-dvh bg-neutral-900 text-neutral-100 px-4 flex flex-col border border-neutral-800 rounded-xl hover:border-[#C7AE6A33] overflow-x-hidden">
+      {/* Header elegante, allineato a sinistra */}
+      <div className="py-6">
+        <Heading level="h2" className="text-xl font-semibold tracking-wide">
+          {t("pageTitle")}
+        </Heading>
+        <hr className="border-t border-[#C7AE6A33] mt-4" />
+      </div>
 
-        <div className="relative h-28 w-28 rounded-full border border-neutral-700 overflow-hidden bg-neutral-800 flex items-center justify-center text-sm">
-          {previewUrl ? (
-            <img src={previewUrl} alt={t("alt.preview")} className="h-full w-full object-cover" />
-          ) : hasImage ? (
-            <img src={currentUrl!} alt={t("alt.current")} className="h-full w-full object-cover" />
-          ) : (
-            <span className="opacity-70">{t("placeholder.noImage")}</span>
+      {/* Layout a due colonne, responsive; preveniamo overflow orizzontale */}
+      <div className="flex-1 grid grid-cols-12 gap-6 sm:gap-8 max-w-full">
+        {/* SINISTRA – immagine + bottoni nello stesso contenitore */}
+        <section className="col-span-12 md:col-span-5 xl:col-span-5 min-w-0">
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 shadow-[0_0_0_1px_rgba(199,174,106,0.07)]">
+            <h3 className="text-base font-medium mb-3 text-[#C7AE6A]">{t("title")}</h3>
+
+            <div className="flex flex-col md:flex-row items-stretch gap-5">
+              {/* Immagine (limitata, senza superare il contenitore) */}
+              <div className="rounded-2xl bg-neutral-900/50 p-2 flex justify-center">
+                {leftImage ? (
+                  <img
+                    src={leftImage}
+                    alt={appliedPreview ? t("alt.preview") : t("alt.current")}
+                    className="block w-full max-w-[260px] h-auto max-h-[60dvh] object-contain rounded-xl"
+                  />
+                ) : (
+                  <div className="grid place-items-center w-full max-w-[260px] h-[40dvh] rounded-xl bg-neutral-800 text-sm text-neutral-400">
+                    {t("placeholder.noImage")}
+                  </div>
+                )}
+              </div>
+
+              {/* Bottoni (a destra su desktop / sotto su mobile) */}
+              <div className="md:min-w-[220px] flex flex-col justify-center mx-auto">
+                <div className="flex flex-col gap-4">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={onPickFile}
+                    disabled={loading}
+                    className="inline-flex h-11 px-5 items-center justify-center text-center leading-tight"
+                  >
+                    {mainBtnLabel}
+                  </Button>
+
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onFileChange}
+                    className="hidden"
+                  />
+
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    onClick={onUpload}
+                    disabled={loading || !file || !chefId}
+                    className={`inline-flex h-11 px-5 items-center justify-center text-center leading-tight lg:text-base ${saveEmphasis}`}
+                  >
+                    {loading ? t("loading") : t("saveButton")}
+                  </Button>
+
+                  {/* Messaggi sotto ai bottoni */}
+                  {error && (
+                    <p className="text-red-400 text-sm text-center" role="alert">
+                      {error}
+                    </p>
+                  )}
+                  {success && (
+                    <p className="text-emerald-400 text-sm text-center" role="status">
+                      {success}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* DESTRA – editor di crop (senza overflow in orizzontale) */}
+        <section className="col-span-12 md:col-span-7 xl:col-span-7 min-w-0 mb-20 lg:mb-0">
+          {originalPreview && (
+            <div className="mt-1">
+              {/* Contenitore che blocca qualsiasi overflow orizzontale */}
+              <div className="rounded-xl overflow-hidden border border-neutral-800 w-full max-w-full">
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  keepSelection
+                  // Forza il wrapper a rispettare il contenitore: l'immagine non supera il 100%
+                  className="w-full max-w-full [&_img]:max-w-full [&_img]:h-auto [&_img]:block"
+                  style={{ width: "100%", maxWidth: "100%" }}
+                >
+                  <img
+                    src={originalPreview}
+                    alt={t("alt.preview")}
+                    onLoad={onImageLoad}
+                    className="max-w-full h-auto block"
+                  />
+                </ReactCrop>
+              </div>
+
+              {/* Azioni crop */}
+              <div className="flex items-center justify-center gap-5 lg:justify-start mt-4">
+                <Button onClick={onCancelCrop} variant="secondary" className="inline-flex h-11 px-5 items-center justify-center">
+                  {t("crop.cancel")}
+                </Button>
+                <Button
+                  onClick={onApplyCrop}
+                  variant="primary"
+                  className="inline-flex h-11 px-5 items-center justify-center"
+                >
+                  {t("crop.confirm")}
+                </Button>
+              </div>
+            </div>
           )}
-        </div>
-
-        <Button type="button" onClick={onPickFile} disabled={loading} className="rounded-2xl px-4">
-          {mainBtnLabel}
-        </Button>
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          onChange={onFileChange}
-          className="hidden"
-        />
-
-        <Button
-          type="button"
-          onClick={onUpload}
-          disabled={loading || !file || !chefId}
-          className="rounded-2xl px-4"
-        >
-          {loading ? t("loading") : t("saveButton")}
-        </Button>
-
-        {error && (
-          <p className="text-red-400 text-sm text-center whitespace-pre-line" role="alert">
-            {error}
-          </p>
-        )}
-        {success && (
-          <p className="text-emerald-400 text-sm text-center" role="status">
-            {success}
-          </p>
-        )}
+        </section>
       </div>
     </div>
-  </div>
-);
-
+  );
 }

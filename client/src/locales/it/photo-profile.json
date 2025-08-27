@@ -1,23 +1,29 @@
 {
   "pageTitle": "Gestisci la foto del profilo",
-  "title": "Foto Profilo",
-  "editButton": "Modifica la Foto Profilo",
-  "uploadButton": "Carica Foto Profilo",
-  "saveButton": "Salva Foto",
+  "title": "Foto profilo attuale",
+  "editButton": "Modifica la foto profilo",
+  "uploadButton": "Carica foto profilo",
+  "saveButton": "Salva foto",
   "loading": "Caricamento...",
   "alt": {
-    "preview": "Anteprima foto profilo",
+    "preview": "Anteprima ritaglio",
     "current": "Foto profilo attuale"
   },
   "placeholder": {
     "noImage": "chef"
   },
+  "crop": {
+    "title": "Ritaglia immagine",
+    "instructions": "Trascina gli angoli per ritagliare l'immagine.",
+    "confirm": "Usa questo ritaglio",
+    "cancel": "Annulla"
+  },
   "messages": {
     "success": "Foto profilo aggiornata con successo.",
     "errors": {
       "noFile": "Seleziona prima un'immagine.",
-      "noId": "ID chef non disponibile (ancora non arrivato da /chefs/me).",
-      "uploadFailed": "Caricamento fallito. Per favore riprova più tardi."
+      "noId": "ID chef non disponibile (da /chefs/me).",
+      "uploadFailed": "Caricamento non riuscito. Riprova più tardi."
     }
   }
 }

@@ -1,16 +1,22 @@
 {
   "pageTitle": "Manage profile photo",
-  "title": "Profile Photo",
+  "title": "Current profile photo",
   "editButton": "Change Profile Photo",
   "uploadButton": "Upload Profile Photo",
   "saveButton": "Save Photo",
   "loading": "Uploading...",
   "alt": {
-    "preview": "Profile photo preview",
+    "preview": "Cropped preview",
     "current": "Current profile photo"
   },
   "placeholder": {
     "noImage": "chef"
+  },
+  "crop": {
+    "title": "Crop image",
+    "instructions": "Drag the corners to crop the image.",
+    "confirm": "Use this crop",
+    "cancel": "Cancel"
   },
   "messages": {
     "success": "Profile photo updated successfully.",
