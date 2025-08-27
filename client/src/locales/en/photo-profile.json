@@ -1,0 +1,23 @@
+{
+  "pageTitle": "Manage profile photo",
+  "title": "Profile Photo",
+  "editButton": "Change Profile Photo",
+  "uploadButton": "Upload Profile Photo",
+  "saveButton": "Save Photo",
+  "loading": "Uploading...",
+  "alt": {
+    "preview": "Profile photo preview",
+    "current": "Current profile photo"
+  },
+  "placeholder": {
+    "noImage": "chef"
+  },
+  "messages": {
+    "success": "Profile photo updated successfully.",
+    "errors": {
+      "noFile": "Please select an image first.",
+      "noId": "Chef ID not available yet (from /chefs/me).",
+      "uploadFailed": "Upload failed. Please try again later."
+    }
+  }
+}

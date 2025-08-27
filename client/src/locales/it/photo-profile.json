@@ -1,0 +1,23 @@
+{
+  "pageTitle": "Gestisci la foto del profilo",
+  "title": "Foto Profilo",
+  "editButton": "Modifica la Foto Profilo",
+  "uploadButton": "Carica Foto Profilo",
+  "saveButton": "Salva Foto",
+  "loading": "Caricamento...",
+  "alt": {
+    "preview": "Anteprima foto profilo",
+    "current": "Foto profilo attuale"
+  },
+  "placeholder": {
+    "noImage": "chef"
+  },
+  "messages": {
+    "success": "Foto profilo aggiornata con successo.",
+    "errors": {
+      "noFile": "Seleziona prima un'immagine.",
+      "noId": "ID chef non disponibile (ancora non arrivato da /chefs/me).",
+      "uploadFailed": "Caricamento fallito. Per favore riprova più tardi."
+    }
+  }
+}
