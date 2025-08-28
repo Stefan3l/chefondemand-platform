@@ -10,7 +10,8 @@
     "current": "Foto profilo attuale"
   },
   "placeholder": {
-    "noImage": "chef"
+    "noImage": "chef",
+    "addProfilePhoto": "Aggiungi la tua foto profilo"
   },
   "crop": {
     "title": "Ritaglia immagine",

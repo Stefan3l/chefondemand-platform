@@ -10,7 +10,8 @@
     "current": "Current profile photo"
   },
   "placeholder": {
-    "noImage": "chef"
+    "noImage": "chef",
+    "addProfilePhoto": "Add your profile photo"
   },
   "crop": {
     "title": "Crop image",

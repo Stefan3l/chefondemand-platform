@@ -3,13 +3,12 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import ReactCrop, { Crop } from "react-image-crop";
-// Importa il CSS di react-image-crop a livello globale (es. in app/layout.tsx):
-// import "react-image-crop/dist/ReactCrop.css";
-
+import Image from "next/image";
 import { api } from "@/lib/axios";
 import { Button, Heading } from "@/components/ui";
 import { useMe } from "@/context/me";
 import { useTranslation } from "@/utils/useTranslation";
+import { Plus } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const toAbsolute = (u: string) => (u?.startsWith("http") ? u : `${API_BASE}${u}`);
@@ -40,14 +39,16 @@ export default function PhotoProfile() {
   const [crop, setCrop] = useState<Crop>({ unit: "px", x: 0, y: 0, width: 0, height: 0 });
   const imgRef = useRef<HTMLImageElement | null>(null);
 
+  // Dimensiunile naturale ale imaginii pentru layout corect (crop shrink-to-fit)
+  const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
+
   // UI e messaggi
   const [loading, setLoading] = useState(false);
-  const [needsSave, setNeedsSave] = useState(false); // evidenzia "Salva foto" dopo "Usa questo ritaglio"
+  const [needsSave, setNeedsSave] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // ──────────────────────────────────────────────────────────────────────────────
   // Sincronizza l'immagine dal contesto se cambia
   useEffect(() => {
     setCurrentUrl(me?.profileImage ?? null);
@@ -63,7 +64,6 @@ export default function PhotoProfile() {
     return () => clearTimeout(id);
   }, [error, success]);
 
-  // ──────────────────────────────────────────────────────────────────────────────
   // Selezione file
   function onPickFile() {
     setError(null);
@@ -86,10 +86,14 @@ export default function PhotoProfile() {
     setNeedsSave(false);
   }
 
-  // Inizializza un crop elegante (80% centrato)
+  // Inizializza un crop elegante (80% centrato) + salvează dimensiunile naturale pt. layout
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const img = e.currentTarget;
     imgRef.current = img;
+
+    // salvează dimensiunile naturale pentru Next/Image (layout corect, fără întindere)
+    setImgSize({ w: img.naturalWidth, h: img.naturalHeight });
+
     const displayW = img.width;
     const displayH = img.height;
     const cw = Math.round(displayW * 0.8);
@@ -227,96 +231,105 @@ export default function PhotoProfile() {
       {/* Layout a due colonne, responsive; preveniamo overflow orizzontale */}
       <div className="flex-1 grid grid-cols-12 gap-6 sm:gap-8 max-w-full">
         {/* SINISTRA – immagine + bottoni nello stesso contenitore */}
-        <section className="col-span-12 md:col-span-5 xl:col-span-5 min-w-0">
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 shadow-[0_0_0_1px_rgba(199,174,106,0.07)]">
-            <h3 className="text-base font-medium mb-3 text-[#C7AE6A]">{t("title")}</h3>
+        <section className="col-span-12  xl:col-span-5 min-w-0">
+  <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-5 shadow-[0_0_0_1px_rgba(199,174,106,0.07)]">
+    <h3 className="text-base font-medium mb-3 text-[#C7AE6A] text-center xl:text-start ml-2">
+      {leftImage ? t("title") : t("placeholder.addProfilePhoto")}
+    </h3>
 
-            <div className="flex flex-col md:flex-row items-stretch gap-5">
-              {/* Immagine (limitata, senza superare il contenitore) */}
-              <div className="rounded-2xl bg-neutral-900/50 p-2 flex justify-center">
-                {leftImage ? (
-                  <img
-                    src={leftImage}
-                    alt={appliedPreview ? t("alt.preview") : t("alt.current")}
-                    className="block w-full max-w-[260px] h-auto max-h-[60dvh] object-contain rounded-xl"
-                  />
-                ) : (
-                  <div className="grid place-items-center w-full max-w-[260px] h-[40dvh] rounded-xl bg-neutral-800 text-sm text-neutral-400">
-                    {t("placeholder.noImage")}
-                  </div>
-                )}
-              </div>
-
-              {/* Bottoni (a destra su desktop / sotto su mobile) */}
-              <div className="md:min-w-[220px] flex flex-col justify-center mx-auto">
-                <div className="flex flex-col gap-4">
-                  <Button
-                    type="button"
-                    variant="primary"
-                    onClick={onPickFile}
-                    disabled={loading}
-                    className="inline-flex h-11 px-5 items-center justify-center text-center leading-tight"
-                  >
-                    {mainBtnLabel}
-                  </Button>
-
-                  <input
-                    ref={inputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={onFileChange}
-                    className="hidden"
-                  />
-
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    onClick={onUpload}
-                    disabled={loading || !file || !chefId}
-                    className={`inline-flex h-11 px-5 items-center justify-center text-center leading-tight lg:text-base ${saveEmphasis}`}
-                  >
-                    {loading ? t("loading") : t("saveButton")}
-                  </Button>
-
-                  {/* Messaggi sotto ai bottoni */}
-                  {error && (
-                    <p className="text-red-400 text-sm text-center" role="alert">
-                      {error}
-                    </p>
-                  )}
-                  {success && (
-                    <p className="text-emerald-400 text-sm text-center" role="status">
-                      {success}
-                    </p>
-                  )}
-                </div>
-              </div>
+    <div className="flex flex-col xl:flex-row items-stretch gap-5">
+      <div className="rounded-2xl bg-neutral-900/50 p-2 flex flex-col items-center justify-center">
+        {leftImage ? (
+          <Image
+            width={200}
+            height={200}
+            src={leftImage}
+            alt={appliedPreview ? t("alt.preview") : t("alt.current")}
+            className="block w-full max-w-[260px] h-auto max-h-[60dvh] object-contain rounded-xl"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2">
+            <div
+              className="flex items-center justify-center w-42 h-42 rounded-lg bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white transition cursor-pointer"
+              onClick={onPickFile}
+            >
+              <Plus className="w-12 h-12" />
             </div>
           </div>
-        </section>
+        )}
+      </div>
 
-        {/* DESTRA – editor di crop (senza overflow in orizzontale) */}
-        <section className="col-span-12 md:col-span-7 xl:col-span-7 min-w-0 mb-20 lg:mb-0">
+      <div className="md:min-w[220px] flex flex-col justify-center mx-auto">
+        <div className="flex flex-col gap-4">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={onPickFile}
+            disabled={loading}
+            className="inline-flex h-11 px-5 items-center justify-center text-center leading-tight"
+          >
+            {mainBtnLabel}
+          </Button>
+
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={onFileChange}
+            className="hidden"
+          />
+
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={onUpload}
+            disabled={loading || !file || !chefId}
+            className={`inline-flex h-11 px-5 items-center justify-center text-center leading-tight lg:text-base ${saveEmphasis}`}
+          >
+            {loading ? t("loading") : t("saveButton")}
+          </Button>
+
+          {/* Messaggi sotto ai bottoni */}
+          {error && (
+            <p className="text-red-400 text-sm text-center" role="alert">
+              {error}
+            </p>
+          )}
+          {success && (
+            <p className="text-emerald-400 text-sm text-center" role="status">
+              {success}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+       {/* DESTRA – editor di crop (shrink-to-fit, fără banda neagră) */}
+        <section className="col-span-12  xl:col-span-7 min-w-0 mb-20 lg:mb-0">
           {originalPreview && (
             <div className="mt-1">
-              {/* Contenitore che blocca qualsiasi overflow orizzontale */}
-              <div className="rounded-xl overflow-hidden border border-neutral-800 w-full max-w-full">
-                <ReactCrop
-                  crop={crop}
-                  onChange={(c) => setCrop(c)}
-                  keepSelection
-                  // Forza il wrapper a rispettare il contenitore: l'immagine non supera il 100%
-                  className="w-full max-w-full [&_img]:max-w-full [&_img]:h-auto [&_img]:block"
-                  style={{ width: "100%", maxWidth: "100%" }}
-                >
-                  <img
-                    src={originalPreview}
-                    alt={t("alt.preview")}
-                    onLoad={onImageLoad}
-                    className="max-w-full h-auto block"
-                  />
-                </ReactCrop>
-              </div>
+              {/* Container strict cât imaginea */}
+           <div className="rounded-xl overflow-hidden border border-neutral-800 inline-block bg-transparent w-full max-w-[92vw] lg:max-w-[700px]">
+              <ReactCrop
+                crop={crop}
+                onChange={(c) => setCrop(c)}
+                keepSelection
+                className="block w-full"
+              >
+                <img
+                  src={originalPreview}
+                  alt={t("alt.preview")}
+                  onLoad={onImageLoad}
+                  className="block w-full h-auto max-h-[80vh]"
+                  crossOrigin="anonymous"
+                />
+              </ReactCrop>
+            </div>
+
+
 
               {/* Azioni crop */}
               <div className="flex items-center justify-center gap-5 lg:justify-start mt-4">
@@ -334,6 +347,7 @@ export default function PhotoProfile() {
             </div>
           )}
         </section>
+
       </div>
     </div>
   );
