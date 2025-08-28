@@ -11,6 +11,7 @@ router.get("/:chefId/profile", authJwtMiddleware, getProfile);
 
 // Crea/aggiorna profilo (parziale, upsert)
 router.patch("/:chefId/profile", authJwtMiddleware, upsertProfile);
+router.put("/:chefId/profile", authJwtMiddleware, upsertProfile);
 
 // Carica foto profilo (campo: "photo")
 router.post("/:chefId/profile/photo", authJwtMiddleware, profileUpload.single("photo"), uploadProfilePhoto);

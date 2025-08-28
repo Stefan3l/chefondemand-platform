@@ -18,11 +18,12 @@
       "email": "Inserisci il tuo indirizzo email",
       "phoneNumber": "Il tuo numero di cellulare",
       "bio": "Racconta la tua esperienza ai clienti (minimo {{min}} caratteri)",
-      "website": "Incolla l'URL del tuo sito (opzionale)",
+      "website": "Incolla l’URL del tuo sito (opzionale)",
       "searchCountry": "Cerca paese o prefisso"
     },
     "actions": {
       "save": "Salva informazioni",
+      "saving": "Salvataggio...",
       "changeCountry": "Cambia paese"
     },
     "ui": {
@@ -38,8 +39,14 @@
       "italian": "Italiano"
     },
     "messages": {
-      "saved": "Le tue informazioni sono state salvate.",
-      "saveError": "Non è stato possibile salvare le informazioni. Riprova."
+      "saved": "Le tue informazioni del profilo sono state salvate.",
+      "saveError": "Non siamo riusciti a salvare le informazioni. Riprova."
+    },
+    "errors": {
+      "firstNameRequired": "Il nome è obbligatorio.",
+      "lastNameRequired": "Il cognome è obbligatorio.",
+      "emailInvalid": "Inserisci un indirizzo email valido.",
+      "phoneRequired": "Il numero di telefono è obbligatorio."
     }
   }
 }

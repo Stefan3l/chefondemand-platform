@@ -23,6 +23,7 @@
     },
     "actions": {
       "save": "Save information",
+      "saving": "Saving...",
       "changeCountry": "Change country"
     },
     "ui": {
@@ -40,6 +41,12 @@
     "messages": {
       "saved": "Your profile information has been saved.",
       "saveError": "We couldn't save your information. Please try again."
+    },
+    "errors": {
+      "firstNameRequired": "First name is required.",
+      "lastNameRequired": "Last name is required.",
+      "emailInvalid": "Please enter a valid email address.",
+      "phoneRequired": "Phone number is required."
     }
   }
 }
