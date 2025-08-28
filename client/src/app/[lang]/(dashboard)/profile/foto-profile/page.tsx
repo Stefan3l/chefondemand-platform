@@ -245,7 +245,7 @@ export default function PhotoProfile() {
             height={200}
             src={leftImage}
             alt={appliedPreview ? t("alt.preview") : t("alt.current")}
-            className="block w-full max-w-[260px] h-auto max-h-[60dvh] object-contain rounded-xl"
+            className="block w-full max-w-[280px] h-auto max-h-[60dvh] object-contain rounded-xl"
           />
         ) : (
           <div className="flex flex-col items-center justify-center gap-2">

@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+   allowedDevOrigins: ["192.168.68.103", "*.192.168.68.103"],
   images: {
     remotePatterns: [
       {
@@ -9,8 +10,14 @@ const nextConfig: NextConfig = {
         port: "4000",
         pathname: "/static/**",
       },
+      {
+        protocol: "http",
+        hostname: "192.168.68.103",
+        port: "4000",
+        pathname: "/static/**",
+      },
     ],
-    // Dacă vrei să dezactivezi optimizările în dev (opțional):
+    // opțional în dev:
     // unoptimized: true,
   },
 };

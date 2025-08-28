@@ -21,21 +21,33 @@ dotenv.config();
 const env = loadEnv();
 const app = express();
 
-/* ───────────────── Sicurezza & performance ───────────────── */
-// ⚠️ Configura helmet per consentire le risorse cross-origin (immagini su porta 4000)
+/* ────────────── CORS: suportă listă de origini ────────────── */
+const rawOrigins = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || "";
+const ALLOWED_ORIGINS = rawOrigins
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+/* ────────────── Securitate & perf ────────────── */
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }, // <- FIX CORP
-    crossOriginEmbedderPolicy: false, // utile in dev per evitare "require-corp"
+    // imagini servite de pe port 4000 pot fi încărcate în Next (port 3000)
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
   })
 );
 
 app.use(cookieParser());
 
-// CORS per XHR/fetch (non influisce su CORP, ma serve per cookie/fetch)
+// CORS pentru XHR/fetch (cu cookie-uri)
 app.use(
   cors({
-    origin: env.CORS_ORIGIN, // es.: "http://localhost:3000"
+    origin: (origin, callback) => {
+      // fără header Origin (ex: curl, Postman) -> permite
+      if (!origin) return callback(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+      return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+    },
     credentials: true,
   })
 );
@@ -43,30 +55,30 @@ app.use(
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 
-/* ───────────────── Static /static → uploads ───────────────── */
-// mappa /static alla cartella 'uploads' e aggiungi CORP cross-origin
+/* ────────────── Static /static → uploads ────────────── */
 const uploadsRoot = path.join(process.cwd(), "uploads");
 app.use(
   "/static",
   (req, res, next) => {
-    // permette l'embed da origin diversa (3000 -> 4000)
+    // permite embed din altă origine (3000 -> 4000)
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    // opzionale ma utile in dev per evitare dubbi
-    if (env.CORS_ORIGIN) {
-      res.setHeader("Access-Control-Allow-Origin", env.CORS_ORIGIN);
+
+    // reflectă Origin-ul DOAR dacă e în whitelist
+    const reqOrigin = req.headers.origin as string | undefined;
+    if (reqOrigin && ALLOWED_ORIGINS.includes(reqOrigin)) {
+      res.setHeader("Access-Control-Allow-Origin", reqOrigin);
       res.setHeader("Access-Control-Allow-Credentials", "true");
     }
     next();
   },
   express.static(uploadsRoot, {
     setHeaders: (res) => {
-      // caching gradevole per le immagini
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     },
   })
 );
 
-/* ───────────────── API ───────────────── */
+/* ────────────── API ────────────── */
 app.use("/api/chefs", chefsRouter);
 app.use(
   rateLimit({
@@ -79,7 +91,7 @@ app.use(
 app.use("/health", healthRouter);
 app.use("/api/inquiries", inquiriesRouter);
 
-/* ───────────────── Error handling ───────────────── */
+/* ────────────── Error handling ────────────── */
 app.use(notFound);
 app.use(errorHandler);
 

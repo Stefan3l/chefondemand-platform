@@ -1,0 +1,45 @@
+{
+  "profileInfo": {
+    "pageTitle": "My Profile — Personal Information",
+    "sectionTitle": "Personal information",
+    "labels": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone number",
+      "phonePrefix": "Prefix",
+      "bio": "Professional bio",
+      "website": "Website",
+      "languages": "Spoken languages"
+    },
+    "placeholders": {
+      "firstName": "Enter your first name",
+      "lastName": "Enter your last name",
+      "email": "Enter your email address",
+      "phoneNumber": "Your mobile number",
+      "bio": "Tell clients about your experience (minimum {{min}} characters)",
+      "website": "Paste your site URL (optional)",
+      "searchCountry": "Search country or prefix"
+    },
+    "actions": {
+      "save": "Save information",
+      "changeCountry": "Change country"
+    },
+    "ui": {
+      "requiredMark": "*",
+      "counter": "{{current}}/{{max}} characters"
+    },
+    "languages": {
+      "spanish": "Español",
+      "french": "Français",
+      "portuguese": "Português",
+      "english": "English",
+      "german": "Deutsch",
+      "italian": "Italiano"
+    },
+    "messages": {
+      "saved": "Your profile information has been saved.",
+      "saveError": "We couldn't save your information. Please try again."
+    }
+  }
+}

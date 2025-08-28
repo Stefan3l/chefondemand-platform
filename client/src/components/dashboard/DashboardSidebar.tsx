@@ -193,7 +193,7 @@ export default function DashboardSidebar({
                   <Camera size={20} /> Foto
                 </Link>
                 <Link
-                  href={`${base}/profile/info`}
+                  href={`${base}/profile/info-personali`}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2 text-md text-white/60 bg-black/20 transition-all duration-300 ${hoverClass}`}
                 >
                   <UserRoundPen size={20} /> Info Personali
