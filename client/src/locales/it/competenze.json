@@ -1,0 +1,28 @@
+{
+  "pageTitle": "Il Mio Profilo - Competenze",
+  "sectionTitle": "Competenze e Specialità",
+  "sectionHelp": "Seleziona le tue specialità culinarie (massimo {{max}}). Queste parole chiave aiuteranno i clienti a trovarti più facilmente.",
+  "counter": "{{count}}/{{max}} specialità selezionate",
+  "save": "Salva Competenze",
+  "saving": "Salvataggio...",
+  "status": {
+    "maxReached": "Puoi selezionare al massimo {{max}} specialità.",
+    "saved": "Competenze salvate.",
+    "notAuth": "Non sei autenticato.",
+    "saveError": "Errore nel salvataggio.",
+    "network": "Errore di rete."
+  },
+  "skills": {
+    "italiana": "Cucina italiana",
+    "fusion": "Cucina Fusion",
+    "vegana": "Cucina Vegana",
+    "vegetariana": "Cucina Vegetariana",
+    "pasticceria": "Pasticceria",
+    "finger_food": "Finger Food",
+    "cooking_class": "Cooking Class",
+    "giapponese": "Cucina Giapponese",
+    "mediterranea": "Cucina Mediterranea",
+    "alta_cucina": "Alta Cucina",
+    "bbq_grill": "BBQ e Grill"
+  }
+}

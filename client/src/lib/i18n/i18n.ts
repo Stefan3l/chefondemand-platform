@@ -16,6 +16,8 @@ import itPhotoProfile from '@/locales/it/photo-profile.json';
 import enPhotoProfile from '@/locales/en/photo-profile.json';
 import itInfoPersonali from '@/locales/it/profileInfo.json';
 import enInfoPersonali from '@/locales/en/profileInfo.json';
+import itCompetenze from '@/locales/it/competenze.json';
+import enCompetenze from '@/locales/en/competenze.json';
 
 export type NamespaceData = Record<string, string>;
 
@@ -28,7 +30,8 @@ export const translations = {
     logoutModal: itLogoutModal,
     changePassword: itChangePassword,
     photoProfile: itPhotoProfile,
-    profileInfo: itInfoPersonali
+    profileInfo: itInfoPersonali,
+    competenze: itCompetenze
   },
   en: {
     common: enCommon,
@@ -38,7 +41,8 @@ export const translations = {
     logoutModal: enLogoutModal,
     changePassword: enChangePassword,
     photoProfile: enPhotoProfile,
-    profileInfo: enInfoPersonali
+    profileInfo: enInfoPersonali,
+    competenze: enCompetenze
   },
 } as const;
 

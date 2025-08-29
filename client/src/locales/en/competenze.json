@@ -1,0 +1,28 @@
+{
+  "pageTitle": "My Profile - Skills",
+  "sectionTitle": "Skills & Specialties",
+  "sectionHelp": "Select your culinary specialties (max {{max}}). These keywords will help customers find you more easily.",
+  "counter": "{{count}}/{{max}} specialties selected",
+  "save": "Save Skills",
+  "saving": "Saving...",
+  "status": {
+    "maxReached": "You can select up to {{max}} specialties.",
+    "saved": "Skills saved.",
+    "notAuth": "You're not authenticated.",
+    "saveError": "Save failed.",
+    "network": "Network error."
+  },
+  "skills": {
+    "italiana": "Italian Cuisine",
+    "fusion": "Fusion Cuisine",
+    "vegana": "Vegan Cuisine",
+    "vegetariana": "Vegetarian Cuisine",
+    "pasticceria": "Pastry",
+    "finger_food": "Finger Food",
+    "cooking_class": "Cooking Class",
+    "giapponese": "Japanese Cuisine",
+    "mediterranea": "Mediterranean Cuisine",
+    "alta_cucina": "Fine Dining",
+    "bbq_grill": "BBQ & Grill"
+  }
+}
