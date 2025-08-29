@@ -21,7 +21,7 @@ dotenv.config();
 const env = loadEnv();
 const app = express();
 
-/* ────────────── CORS: suportă listă de origini ────────────── */
+/* ────────────── CORS (liste de origini) ────────────── */
 const rawOrigins = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || "";
 const ALLOWED_ORIGINS = rawOrigins
   .split(",")
@@ -31,7 +31,6 @@ const ALLOWED_ORIGINS = rawOrigins
 /* ────────────── Securitate & perf ────────────── */
 app.use(
   helmet({
-    // imagini servite de pe port 4000 pot fi încărcate în Next (port 3000)
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginEmbedderPolicy: false,
   })
@@ -39,12 +38,10 @@ app.use(
 
 app.use(cookieParser());
 
-// CORS pentru XHR/fetch (cu cookie-uri)
 app.use(
   cors({
     origin: (origin, callback) => {
-      // fără header Origin (ex: curl, Postman) -> permite
-      if (!origin) return callback(null, true);
+      if (!origin) return callback(null, true); // ex: Postman, curl
       if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
       return callback(new Error(`Origin not allowed by CORS: ${origin}`));
     },
@@ -55,15 +52,19 @@ app.use(
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 
+/* ────────────── Protecție mică: curăță CR/LF/TAB encodate în URL ────────────── */
+app.use((req, _res, next) => {
+  const cleaned = req.url.replace(/%0A|%0D|%09/gi, "");
+  if (cleaned !== req.url) req.url = cleaned;
+  next();
+});
+
 /* ────────────── Static /static → uploads ────────────── */
 const uploadsRoot = path.join(process.cwd(), "uploads");
 app.use(
   "/static",
   (req, res, next) => {
-    // permite embed din altă origine (3000 -> 4000)
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-
-    // reflectă Origin-ul DOAR dacă e în whitelist
     const reqOrigin = req.headers.origin as string | undefined;
     if (reqOrigin && ALLOWED_ORIGINS.includes(reqOrigin)) {
       res.setHeader("Access-Control-Allow-Origin", reqOrigin);
@@ -80,6 +81,7 @@ app.use(
 
 /* ────────────── API ────────────── */
 app.use("/api/chefs", chefsRouter);
+
 app.use(
   rateLimit({
     windowMs: 60_000,
@@ -88,6 +90,7 @@ app.use(
     legacyHeaders: false,
   })
 );
+
 app.use("/health", healthRouter);
 app.use("/api/inquiries", inquiriesRouter);
 
