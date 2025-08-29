@@ -1,16 +1,17 @@
-
 import { Router } from "express";
 import { profileUpload } from "../../../lib/multer";
-import { getProfile, upsertProfile, uploadProfilePhoto } from "../controllers/chefProfile.controller";
 import { authJwtMiddleware } from "../../../middleware/authJwtMiddleware";
+import { getProfile, upsertProfile, patchProfile, uploadProfilePhoto } from "../controllers/chefProfile.controller";
 
 const router = Router({ mergeParams: true });
 
 // Leggi profilo chef
 router.get("/:chefId/profile", authJwtMiddleware, getProfile);
 
-// Crea/aggiorna profilo (parziale, upsert)
-router.patch("/:chefId/profile", authJwtMiddleware, upsertProfile);
+// PATCH parziale (NON sovrascrive i campi assenti)
+router.patch("/:chefId/profile", authJwtMiddleware, patchProfile);
+
+// PUT completo (sostituzione coerente)
 router.put("/:chefId/profile", authJwtMiddleware, upsertProfile);
 
 // Carica foto profilo (campo: "photo")

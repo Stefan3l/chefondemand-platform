@@ -19,7 +19,7 @@ import {
   Carrot,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Heading, Paragraph } from '@/components/ui';
+import { Heading, Paragraph } from "@/components/ui";
 
 /* ----------------------------- Types ----------------------------- */
 type SkillKey =
@@ -41,7 +41,7 @@ type MeData = {
 };
 type MeResponse = { ok?: boolean; data?: MeData } | MeData;
 
-type ProfileData = { skills?: SkillKey[] | null };
+type ProfileData = { skills?: SkillKey[] | null } | { profile?: { skills?: SkillKey[] | null } | null };
 type ProfileResponse = { ok?: boolean; data?: ProfileData } | ProfileData;
 
 type Json = Record<string, unknown>;
@@ -84,32 +84,74 @@ function isObject(u: unknown): u is Json {
 
 function pickMeData(resp: unknown): MeData | null {
   if (!isObject(resp)) return null;
-  if ("id" in resp && typeof (resp as Json).id === "string") {
-    const id = (resp as Json).id as string;
-    const profile = isObject((resp as Json).profile) ? ((resp as Json).profile as MeData["profile"]) : undefined;
-    return { id, profile: profile ?? null };
+
+  // shape A: { id, profile? }
+  if (typeof resp.id === "string") {
+    const id = resp.id as string;
+    const profile = isObject(resp.profile) ? (resp.profile as MeData["profile"]) : null;
+    return { id, profile };
   }
-  if ("data" in resp && isObject((resp as Json).data)) {
-    const d = (resp as Json).data as Json;
-    if (typeof d.id === "string") {
-      const profile = isObject(d.profile) ? (d.profile as MeData["profile"]) : undefined;
-      return { id: d.id, profile: profile ?? null };
+
+  // shape B: { ok?, data: { id, profile? } }
+  if (isObject(resp.data) && typeof (resp.data as Json).id === "string") {
+    const d = resp.data as Json;
+    const id = d.id as string;
+    const profile = isObject(d.profile) ? (d.profile as MeData["profile"]) : null;
+    return { id, profile };
+  }
+
+  return null;
+}
+
+function toSkillArray(raw: unknown): SkillKey[] | null {
+  // already array
+  if (Array.isArray(raw)) {
+    const out = raw.filter((x): x is SkillKey => typeof x === "string") as SkillKey[];
+    return out;
+  }
+  // stringified JSON array
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (Array.isArray(parsed)) {
+        const out = parsed.filter((x): x is SkillKey => typeof x === "string") as SkillKey[];
+        return out;
+      }
+    } catch {
+      /* ignore */
     }
   }
   return null;
 }
 
 function pickProfileSkills(resp: unknown): SkillKey[] | null {
+  // Accept diverse shapes:
+  // - { skills: [...] }
+  // - { profile: { skills: [...] } }
+  // - { data: { skills: [...] } }
+  // - { data: { profile: { skills: [...] } } }
   if (!isObject(resp)) return null;
-  let payload: unknown = resp;
-  if ("data" in resp && isObject((resp as Json).data)) {
-    payload = (resp as Json).data as Json;
+
+  const tryObj = (obj: Json | null | undefined): SkillKey[] | null => {
+    if (!obj) return null;
+    if ("skills" in obj) return toSkillArray((obj as Json).skills);
+    if ("profile" in obj && isObject((obj as Json).profile)) {
+      const prof = (obj as Json).profile as Json;
+      if ("skills" in prof) return toSkillArray(prof.skills);
+    }
+    return null;
+  };
+
+  // top-level
+  const direct = tryObj(resp);
+  if (direct) return direct;
+
+  // in data
+  if (isObject(resp.data)) {
+    const nested = tryObj(resp.data as Json);
+    if (nested) return nested;
   }
-  if (isObject(payload) && Array.isArray((payload as Json).skills)) {
-    const arr = (payload as Json).skills as unknown[];
-    const safe: SkillKey[] = arr.filter((x): x is SkillKey => typeof x === "string") as SkillKey[];
-    return safe;
-  }
+
   return null;
 }
 
@@ -134,13 +176,21 @@ export default function Competenze(): ReactElement {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get<MeResponse>("/api/chefs/me", { validateStatus: () => true });
-        if (res.status !== 200) return;
-        const me = pickMeData(res.data);
+        // 1) /me (authed)
+        const meRes = await api.get<MeResponse>("/api/chefs/me", { validateStatus: () => true });
+        if (meRes.status !== 200) return;
+        const me = pickMeData(meRes.data);
         if (!me?.id) return;
+
         setChefId(me.id);
 
-        // GET profile (new route, fallback to legacy if 404)
+        // Fallback instant: dacă /me conține deja skills, le folosim
+        const skillsFromMe = toSkillArray(me.profile?.skills ?? null);
+        if (skillsFromMe && skillsFromMe.length) {
+          setSelected(new Set(skillsFromMe));
+        }
+
+        // 2) GET profile (preferat) — poate returna stare mai „proaspătă”
         let prof = await api.get<ProfileResponse>(`/api/chefs/${me.id}/profile`, { validateStatus: () => true });
         if (prof.status === 404) {
           prof = await api.get<ProfileResponse>(`/api/chefs/profile/${me.id}/profile`, { validateStatus: () => true });
@@ -184,10 +234,10 @@ export default function Competenze(): ReactElement {
       return;
     }
     setSaving(true);
-    const payload = { skills: Array.from(selected) };
+    const payload = { skills: Array.from(selected) as SkillKey[] };
 
     try {
-      // PATCH (new route), fallback to legacy if 404
+      // PATCH (new route), fallback la legacy dacă 404
       let res = await api.patch(`/api/chefs/${chefId}/profile`, payload, {
         validateStatus: () => true,
         headers: { "Content-Type": "application/json" },
@@ -202,7 +252,7 @@ export default function Competenze(): ReactElement {
       if (res.status >= 200 && res.status < 300) {
         setStatus({ kind: "ok", msg: t("status.saved") });
 
-        // Re-fetch exact profile from DB
+        // Re-fetch exact din DB, apoi refresh UI
         try {
           let prof = await api.get<ProfileResponse>(`/api/chefs/${chefId}/profile`, { validateStatus: () => true });
           if (prof.status === 404) {
@@ -213,7 +263,7 @@ export default function Competenze(): ReactElement {
             setSelected(new Set(skills ?? []));
           }
         } catch {
-          // ignore
+          /* ignore */
         }
 
         router.refresh();
@@ -234,13 +284,17 @@ export default function Competenze(): ReactElement {
   return (
     <div className="w-full px-4 py-6 lg:px-8 mb-10 lg:mb-0">
       {/* Page title */}
-      <Heading level="h3" className="font-semibold text-neutral-200 mb-5">{t("pageTitle")}</Heading>
+      <Heading level="h3" className="font-semibold text-neutral-200 mb-5">
+        {t("pageTitle")}
+      </Heading>
 
       {/* Card */}
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
         {/* Header */}
         <div className="px-5 py-4 border-b border-neutral-800">
-          <Heading level="h4" className="text-base font-semibold text-[#C7AE6A]">{t("sectionTitle")}</Heading>
+          <Heading level="h4" className="text-base font-semibold text-[#C7AE6A]">
+            {t("sectionTitle")}
+          </Heading>
           <Paragraph color="muted" size="sm" className=" mt-1">
             {t("sectionHelp").replace("{{max}}", String(MAX_SELECTED))}
           </Paragraph>
@@ -287,9 +341,7 @@ export default function Competenze(): ReactElement {
 
           {/* Counter */}
           <div className="mt-4 text-sm text-neutral-400">
-            {t("counter")
-              .replace("{{count}}", String(selectedCount))
-              .replace("{{max}}", String(MAX_SELECTED))}
+            {t("counter").replace("{{count}}", String(selectedCount)).replace("{{max}}", String(MAX_SELECTED))}
           </div>
 
           {/* Save button */}

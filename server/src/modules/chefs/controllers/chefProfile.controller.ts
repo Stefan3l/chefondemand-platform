@@ -1,11 +1,12 @@
 import fs from "fs/promises";
-import { Request, Response, NextFunction } from "express";
 import path from "path";
+import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../../utils/AppError";
-import { chefProfileSchema } from "../validators";
+import { chefProfileSchema } from "../validators"; // schema "full"
+import { chefProfilePatchSchema } from "../validators";
 import * as profileService from "../services/chefProfile.service";
 
-// TODO: sostituire con auth reale (JWT). Verifica che l'utente sia il proprietario del profilo.
+// Verifica proprietà profilo (JWT reale da attivare)
 function assertSameUserOrThrow(req: Request, chefId: string) {
   const user = (req as any).user as { id?: string; sub?: string } | undefined;
   const userId = user?.id || user?.sub;
@@ -15,16 +16,13 @@ function assertSameUserOrThrow(req: Request, chefId: string) {
 
 /**
  * GET /api/chefs/:chefId/profile
- * Ritorna il profilo dello chef (404 se non esiste).
+ * Ritorna il profilo (404 se non esiste).
  */
 export async function getProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const { chefId } = req.params;
-    // assertSameUserOrThrow(req, chefId); // attiva quando hai l'auth pronta
-
     const profile = await profileService.getByChefId(chefId);
     if (!profile) return res.status(404).json({ ok: false, message: "Profilo inesistente" });
-
     res.json({ ok: true, data: profile });
   } catch (err) {
     next(err);
@@ -32,17 +30,34 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
 }
 
 /**
- * PATCH /api/chefs/:chefId/profile
- * Crea/aggiorna parzialmente il profilo (upsert).
+ * PUT /api/chefs/:chefId/profile
+ * Upsert COMPLETO (sostituzione coerente).
  */
 export async function upsertProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const { chefId } = req.params;
     assertSameUserOrThrow(req, chefId);
 
-    // Validazione in ITA (schema gestisce anche "" -> undefined per website)
     const parsed = chefProfileSchema.parse(req.body);
-    const result = await profileService.upsertByChefId(chefId, parsed);
+    const result = await profileService.upsertFullByChefId(chefId, parsed);
+
+    res.json({ ok: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PATCH /api/chefs/:chefId/profile
+ * Update PARZIALE: tocca solo i campi presenti nel payload.
+ */
+export async function patchProfile(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { chefId } = req.params;
+    assertSameUserOrThrow(req, chefId);
+
+    const parsed = chefProfilePatchSchema.parse(req.body);
+    const result = await profileService.updatePartialByChefId(chefId, parsed);
 
     res.json({ ok: true, data: result });
   } catch (err) {
@@ -63,12 +78,11 @@ export async function uploadProfilePhoto(req: Request, res: Response, next: Next
     const file = (req as any).file as Express.Multer.File | undefined;
     if (!file) throw new AppError("Immagine mancante", 400);
 
-    uploadedPath = file.path; // per cleanup in caso di errore successivo
+    uploadedPath = file.path;
 
     const rel = path.join("profiles", chefId, file.filename).replace(/\\/g, "/");
     const publicUrl = `/static/${rel}`;
 
-    // service ritorna un profilo "safe" (senza path interno)
     const profile = await profileService.setProfilePhoto(chefId, {
       url: publicUrl,
       path: file.path,
@@ -78,10 +92,9 @@ export async function uploadProfilePhoto(req: Request, res: Response, next: Next
     return res.json({
       ok: true,
       message: "Foto profilo aggiornata",
-      data: profile, // oggetto safe
+      data: profile,
     });
   } catch (err) {
-    // se qualcosa fallisce dopo che Multer ha scritto il file, rimuovi il nuovo file
     if (uploadedPath) {
       try {
         await fs.unlink(uploadedPath);
