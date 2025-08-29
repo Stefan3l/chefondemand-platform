@@ -55,6 +55,6 @@ chefsRouter
 
 /* --------- PROFILO --------- */
 // Montato sotto /profile per evitare collisioni con /:chefId/...
-chefsRouter.use("/profile", chefProfileRoutes);
+chefsRouter.use("/", chefProfileRoutes);
 
 export default chefsRouter;

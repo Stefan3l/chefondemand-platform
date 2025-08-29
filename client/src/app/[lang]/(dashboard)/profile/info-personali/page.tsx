@@ -14,7 +14,7 @@ import type { Country } from "react-phone-number-input";
 import ReactCountryFlag from "react-country-flag";
 import { ChevronDown, Check } from "lucide-react";
 
-/* ---------------- Tipuri API (strict, fără any) ---------------- */
+/* ---------------- Tipuri API (strict) ---------------- */
 type ChefProfile = {
   bio?: string | null;
   website?: string | null;
@@ -41,17 +41,24 @@ type MeData = {
 
 type MeResponse = { ok?: boolean; data?: MeData } | MeData;
 
-type SavePayload = {
+type AccountPayload = {
   firstName: string;
-  lastName?: string | null;
+  lastName: string;
   email: string;
   countryCode: Country;
   phonePrefix: string; // cu "+"
   phoneNumber: string; // doar cifre
+};
+
+type ProfilePayload = {
   bio?: string | null;
   website?: string | null;
   languages?: string[]; // ["it","en",...]
 };
+
+type ApiOk<T> = { ok: true; data: T; message?: string };
+type ApiErr = { ok: false; message?: string };
+type ApiResp<T> = ApiOk<T> | ApiErr;
 
 /* ---------------- UI helpers ---------------- */
 function Section({ children }: { children: ReactNode }) {
@@ -110,7 +117,7 @@ export default function InfoPersonali() {
   const [chefId, setChefId] = useState<string>("");
 
   const [firstName, setFirstName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>(""); // opțional
+  const [lastName, setLastName] = useState<string>(""); // acum obligatoriu
   const [email, setEmail] = useState<string>("");
 
   const [country, setCountry] = useState<Country>("IT");
@@ -231,9 +238,13 @@ export default function InfoPersonali() {
 
   /* ------------ SAVE ------------ */
   async function onSave(): Promise<void> {
-    // doar nume, email, telefon sunt obligatorii (cognome, bio, site, limbi — opționale)
+    // obligatorii: firstName, lastName, email, telefon (prefix+number)
     if (!firstName.trim()) {
       setStatus({ kind: "err", msg: t("profileInfo.errors.firstNameRequired") || "First name is required." });
+      return;
+    }
+    if (!lastName.trim() || lastName.trim().length < 2) {
+      setStatus({ kind: "err", msg: t("profileInfo.errors.lastNameRequired") || "Last name is required." });
       return;
     }
     if (!emailRe.test(email)) {
@@ -249,13 +260,16 @@ export default function InfoPersonali() {
       return;
     }
 
-    const payload: SavePayload = {
+    const accountPayload: AccountPayload = {
       firstName: firstName.trim(),
-      lastName: lastName.trim() ? lastName.trim() : null,
+      lastName: lastName.trim(),
       email: email.trim(),
       countryCode: country,
       phonePrefix: `+${prefix}`,
-      phoneNumber: localNumber,
+      phoneNumber: localNumber.replace(/\D/g, ""),
+    };
+
+    const profilePayload: ProfilePayload = {
       bio: bio.trim() ? bio.trim() : null,
       website: website.trim() ? website.trim() : null,
       languages: fromKeysToCodes(langs),
@@ -263,26 +277,48 @@ export default function InfoPersonali() {
 
     setSaving(true);
     try {
-      // prefer PATCH (contract parțial); fallback la PUT dacă serverul nu îl expune
-      let res = await api.patch<{ ok?: boolean; message?: string }>(`/api/chefs/${chefId}/profile`, payload, {
-        validateStatus: () => true,
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (res.status === 404 || res.status === 405) {
-        res = await api.put<{ ok?: boolean; message?: string }>(`/api/chefs/${chefId}/profile`, payload, {
-          validateStatus: () => true,
-          headers: { "Content-Type": "application/json" },
-        });
+      // 1) UPDATE ACCOUNT (noua API)
+      let accRes = await api.put<ApiResp<unknown>>(
+        `/api/chefs/${chefId}/account`,
+        accountPayload,
+        { validateStatus: () => true, headers: { "Content-Type": "application/json" } }
+      );
+      if (accRes.status === 404 || accRes.status === 405) {
+        accRes = await api.patch<ApiResp<unknown>>(
+          `/api/chefs/${chefId}/account`,
+          accountPayload,
+          { validateStatus: () => true, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      if (accRes.status === 409) {
+        setStatus({ kind: "err", msg: (accRes.data as ApiErr)?.message || "Conflict" });
+        return;
+      }
+      if (accRes.status < 200 || accRes.status >= 300) {
+        setStatus({ kind: "err", msg: (accRes.data as ApiErr)?.message || (t("profileInfo.messages.saveError") || "Save failed.") });
+        return;
       }
 
-      if (res.status >= 200 && res.status < 300) {
-        setStatus({ kind: "ok", msg: res.data?.message || t("profileInfo.messages.saved") || "Saved." });
-        // refacem /me ca să reflecte exact DB (inclusiv telefon)
-        await fetchMe();
-      } else {
-        setStatus({ kind: "err", msg: res.data?.message || t("profileInfo.messages.saveError") || "Save failed." });
+      // 2) LOGICA EXISTENTĂ: UP SERT PROFIL (n-am modificat layout-ul / câmpurile)
+      let profRes = await api.patch<ApiResp<unknown>>(
+        `/api/chefs/${chefId}/profile`,
+        profilePayload,
+        { validateStatus: () => true, headers: { "Content-Type": "application/json" } }
+      );
+      if (profRes.status === 404 || profRes.status === 405) {
+        profRes = await api.patch<ApiResp<unknown>>(
+          `/api/chefs/profile/${chefId}`,
+          profilePayload,
+          { validateStatus: () => true, headers: { "Content-Type": "application/json" } }
+        );
       }
+      if (profRes.status >= 400 && profRes.status !== 404) {
+        setStatus({ kind: "err", msg: (profRes.data as ApiErr)?.message || (t("profileInfo.messages.saveError") || "Save failed.") });
+        return;
+      }
+
+      setStatus({ kind: "ok", msg: t("profileInfo.messages.saved") || "Saved." });
+      await fetchMe(); // reflectă exact DB
     } catch (e) {
       setStatus({
         kind: "err",
