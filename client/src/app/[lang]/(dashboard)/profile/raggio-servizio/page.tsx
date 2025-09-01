@@ -527,7 +527,7 @@ export default function RaggioServizioForm({
       )}
 
       {/* Actions */}
-      <div className="mt-8 flex items-center gap-3">
+      <div className="mt-8 flex items-center gap-3 justify-center lg:justify-start">
         <Button
           type="submit"
           disabled={!canSave || saving}
