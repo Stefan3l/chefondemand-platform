@@ -1,0 +1,59 @@
+{
+  "profile": {
+    "serviceRadius": {
+      "title": "Raggio di Servizio",
+      "sectionLabel": "POSIZIONE",
+      "address": {
+        "label": "Indirizzo",
+        "placeholder": "Inserisci il tuo indirizzo",
+        "errors": {
+          "required": "L'indirizzo è obbligatorio.",
+          "geocodeFailed": "Non siamo riusciti a trovare quell'indirizzo. Seleziona un suggerimento o trascina il pin sulla mappa."
+        }
+      },
+      "region": {
+        "label": "Regione",
+        "placeholder": "Es. Lombardia"
+      },
+      "country": {
+        "label": "Paese",
+        "placeholder": "Seleziona un paese",
+        "errors": {
+          "required": "Il paese è obbligatorio."
+        }
+      },
+      "map": {
+        "loading": "Caricamento mappa...",
+        "notAvailable": "Mappa non disponibile",
+        "configureKeyHint": "Configura NEXT_PUBLIC_GOOGLE_MAPS_API_KEY nel file .env"
+      },
+      "radius": {
+        "label": "Raggio d’azione:",
+        "unit": "km.",
+        "errors": {
+          "min": "Il raggio minimo è {{min}} km.",
+          "max": "Il raggio massimo è {{max}} km."
+        }
+      },
+      "notice": {
+        "title": "Importante:",
+        "text": "Tieni presente che accetti di non addebitare i costi di trasporto entro il raggio di distanza specificato sopra."
+      },
+      "actions": {
+        "save": "Salva",
+        "saving": "Salvataggio..."
+      },
+      "toast": {
+        "successTitle": "Salvato",
+        "successMessage": "La tua zona di servizio è stata aggiornata.",
+        "errorTitle": "Errore",
+        "errorMessage": "Impossibile salvare la zona di servizio in questo momento. Riprova."
+      },
+      "api": {
+        "validationFailed": "Alcuni campi non sono validi. Controlla gli input evidenziati.",
+        "networkError": "Errore di rete. Controlla la connessione e riprova."
+      }
+    }
+  },
+  "onlyItaly": "Mappa disponibile solo per l'Italia."
+}

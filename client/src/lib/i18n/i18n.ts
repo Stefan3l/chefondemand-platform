@@ -18,6 +18,8 @@ import itInfoPersonali from '@/locales/it/profileInfo.json';
 import enInfoPersonali from '@/locales/en/profileInfo.json';
 import itCompetenze from '@/locales/it/competenze.json';
 import enCompetenze from '@/locales/en/competenze.json';
+import itRaggioServizio from '@/locales/it/raggio-servizio.json';
+import enRaggioServizio from '@/locales/en/raggio-servizio.json';
 
 export type NamespaceData = Record<string, string>;
 
@@ -31,7 +33,8 @@ export const translations = {
     changePassword: itChangePassword,
     photoProfile: itPhotoProfile,
     profileInfo: itInfoPersonali,
-    competenze: itCompetenze
+    competenze: itCompetenze,
+    raggioServizio: itRaggioServizio
   },
   en: {
     common: enCommon,
@@ -42,7 +45,8 @@ export const translations = {
     changePassword: enChangePassword,
     photoProfile: enPhotoProfile,
     profileInfo: enInfoPersonali,
-    competenze: enCompetenze
+    competenze: enCompetenze,
+    raggioServizio: enRaggioServizio
   },
 } as const;
 

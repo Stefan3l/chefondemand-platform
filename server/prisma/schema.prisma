@@ -45,13 +45,13 @@ model ChefProfile {
   website String? @db.VarChar(255)
 
   // Array-uri (PostgreSQL)
-  languages String[] // opțional; salvezi [] din API dacă vrei
+  languages String[] // opțional; salvezi [] din API 
   skills    String[] // max 5 — validăm în API
 
   // Locație / arie
   address         String? @db.VarChar(255)
   region          String? @db.VarChar(100)
-  country         String? @db.Char(2) // ISO (ex. "IT", "BE")
+  country         String? @db.Char(2) 
   serviceRadiusKm Int?
 
   createdAt DateTime @default(now())

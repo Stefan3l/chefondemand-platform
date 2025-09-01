@@ -1,0 +1,59 @@
+{
+  "profile": {
+    "serviceRadius": {
+      "title": "Service Radius",
+      "sectionLabel": "LOCATION",
+      "address": {
+        "label": "Address",
+        "placeholder": "Enter your address",
+        "errors": {
+          "required": "Address is required.",
+          "geocodeFailed": "We couldn't locate that address. Please pick a suggestion or drag the pin on the map."
+        }
+      },
+      "region": {
+        "label": "Region",
+        "placeholder": "e.g., Lombardy"
+      },
+      "country": {
+        "label": "Country",
+        "placeholder": "Select a country",
+        "errors": {
+          "required": "Country is required."
+        }
+      },
+      "map": {
+        "loading": "Loading map...",
+        "notAvailable": "Map not available",
+        "configureKeyHint": "Configure NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in your .env file"
+      },
+      "radius": {
+        "label": "Service radius:",
+        "unit": "km.",
+        "errors": {
+          "min": "Minimum radius is {{min}} km.",
+          "max": "Maximum radius is {{max}} km."
+        }
+      },
+      "notice": {
+        "title": "Important:",
+        "text": "Please note you agree not to charge transport costs within the distance radius specified above."
+      },
+      "actions": {
+        "save": "Save",
+        "saving": "Saving..."
+      },
+      "toast": {
+        "successTitle": "Saved",
+        "successMessage": "Your service area has been updated.",
+        "errorTitle": "Error",
+        "errorMessage": "Unable to save your service area right now. Please try again."
+      },
+      "api": {
+        "validationFailed": "Some fields are invalid. Please review the highlighted inputs.",
+        "networkError": "Network error. Check your connection and try again."
+      }
+    }
+  },
+  "onlyItaly": "Map available only for Italy."
+}

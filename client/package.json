@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
+    "@react-google-maps/api": "^2.20.7",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
     "i18next": "^25.3.4",
