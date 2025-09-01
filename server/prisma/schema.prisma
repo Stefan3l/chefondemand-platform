@@ -10,20 +10,24 @@ datasource db {
 
 model Chef {
   id           String   @id @default(cuid())
-  firstName    String   @db.VarChar(60) // Chef's first name
-  lastName     String   @db.VarChar(60) // Chef's last name
-  countryCode  String   @db.Char(2) // ISO code, e.g. "IT", "BE"
-  phonePrefix  String   @db.VarChar(8) // e.g. "+39"
-  phoneNumber  String   @db.VarChar(20) // local number without prefix
-  email        String   @unique @db.VarChar(255) // unique login email
-  passwordHash String // bcrypt hash (never store plain)
+  firstName    String   @db.VarChar(60)   // Nome dello chef
+  lastName     String   @db.VarChar(60)   // Cognome dello chef
+  countryCode  String   @db.Char(2)       // Codice paese ISO2 (es. "IT", "BE")
+  phonePrefix  String   @db.VarChar(8)    // Prefisso telefonico (es. "+39")
+  phoneNumber  String   @db.VarChar(20)   // Numero locale senza prefisso
+  email        String   @unique @db.VarChar(255) // Email di login (univoca)
+  passwordHash String                      // Hash bcrypt (mai in chiaro)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  profile ChefProfile? @relation("ChefToProfile")
+  // Relazioni
+  profile     ChefProfile?    @relation("ChefToProfile")      // 1–a–1 con ChefProfile
+  dishPhotos  ChefDishPhoto[] @relation("ChefToDishPhotos")   // 1–a–N: foto dei piatti dello chef
 
+  // Unicità combinata su prefisso + numero
   @@unique([phonePrefix, phoneNumber], name: "unique_phone")
 }
+
 
 // Tabella ChefPro
 model ChefProfile {
@@ -56,4 +60,34 @@ model ChefProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+/**
+ * Foto di piatto (una riga = una foto).
+ * Collegata allo chef tramite chefId (relazione 1–a–N).
+ * La descrizione è opzionale.
+ */
+model ChefDishPhoto {
+  id String @id @default(cuid())
+
+  
+  chefId String
+  chef   Chef   @relation("ChefToDishPhotos", fields: [chefId], references: [id], onDelete: Cascade)
+
+  // File immagine
+  imageUrl    String  @db.VarChar(512)  // URL pubblico (es. S3/Cloudinary)
+  imagePath   String? @db.VarChar(512)  // Percorso interno (facoltativo)
+  imageMime   String? @db.VarChar(100)  // MIME (es. "image/jpeg")
+  imageWidth  Int?                     // Larghezza in pixel (facoltativo)
+  imageHeight Int?                     // Altezza in pixel (facoltativo)
+
+  // Descrizione breve del piatto (opzionale)
+  description String? @db.VarChar(240)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Indice per ricerche rapide per chef
+  @@index([chefId], map: "idx_dishphoto_chefid")
 }

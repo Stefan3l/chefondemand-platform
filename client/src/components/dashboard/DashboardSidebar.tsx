@@ -248,6 +248,12 @@ export default function DashboardSidebar({
                 } space-y-2 ml-10 overflow-hidden rounded-lg transition-[max-height] duration-300`}
               >
                 <Link
+                  href={`${base}/profile/foto-profile`}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-md text-white/60 bg-black/20 transition-all duration-300 ${hoverClass}`}
+                >
+                  <Camera size={20} /> Foto Piatti
+                </Link>
+                <Link
                   href={`${base}/menu`}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2 text-md text-white/60 bg-black/20 transition-all duration-300 ${hoverClass}`}
                 >

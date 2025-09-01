@@ -1,14 +1,13 @@
-import "express";
+// src/types/express.d.ts
+import "express-serve-static-core";
 
 declare module "express-serve-static-core" {
   interface Request {
     user?: {
-      sub?: string;
-      id?: string;
+      id: string;
+      chefId?: string;
+      role?: "chef" | "admin" | "user";
       email?: string;
-      role?: string;
-      iat?: number;
-      exp?: number;
     };
   }
 }

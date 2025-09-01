@@ -8,8 +8,9 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import path from "path";
 
-// routes
+// routes principali
 import chefsRouter from "./modules/chefs/routes/chefs.routes";
+import dishPhotosRouter from "./modules/chefs/routes/dishPhotos.routes"; // ← NUOVO
 import { healthRouter } from "./modules/health/health";
 import { inquiriesRouter } from "./modules/inquiries/inquiries.routes";
 
@@ -21,17 +22,19 @@ dotenv.config();
 const env = loadEnv();
 const app = express();
 
-/* ────────────── CORS (liste de origini) ────────────── */
+/* ───────────────── CORS (liste origini consentite) ───────────────── */
 const rawOrigins = process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || "";
 const ALLOWED_ORIGINS = rawOrigins
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
-/* ────────────── Securitate & perf ────────────── */
+/* ───────────────── Sicurezza & performance ───────────────── */
 app.use(
   helmet({
+    // Consente di servire immagini/statiche cross-origin
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    // Disabilitiamo COEP per evitare problemi con script terzi
     crossOriginEmbedderPolicy: false,
   })
 );
@@ -41,29 +44,32 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // ex: Postman, curl
+      // Nessuna origin (Postman/curl) → permetti
+      if (!origin) return callback(null, true);
       if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-      return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+      return callback(new Error(`Origin non consentita dal CORS: ${origin}`));
     },
     credentials: true,
   })
 );
 
 app.use(compression());
+// Body parser (limite ragionevole per payload JSON)
 app.use(express.json({ limit: "1mb" }));
 
-/* ────────────── Protecție mică: curăță CR/LF/TAB encodate în URL ────────────── */
+/* ───────────────── Piccola protezione URL: rimuove CR/LF/TAB percent-encoded ───────────────── */
 app.use((req, _res, next) => {
   const cleaned = req.url.replace(/%0A|%0D|%09/gi, "");
   if (cleaned !== req.url) req.url = cleaned;
   next();
 });
 
-/* ────────────── Static /static → uploads ────────────── */
+/* ───────────────── Statico: /static → cartella uploads ───────────────── */
 const uploadsRoot = path.join(process.cwd(), "uploads");
 app.use(
   "/static",
   (req, res, next) => {
+    // Consente embedding cross-origin per le risorse statiche
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     const reqOrigin = req.headers.origin as string | undefined;
     if (reqOrigin && ALLOWED_ORIGINS.includes(reqOrigin)) {
@@ -74,27 +80,32 @@ app.use(
   },
   express.static(uploadsRoot, {
     setHeaders: (res) => {
+      // Cache aggressiva per asset immutabili
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     },
   })
 );
 
-/* ────────────── API ────────────── */
-app.use("/api/chefs", chefsRouter);
-
+/* Lo applichiamo PRIMA di montare le rotte API, così copre tutte le sotto-rotte. */
 app.use(
+  "/api",
   rateLimit({
-    windowMs: 60_000,
-    max: 120,
+    windowMs: 60_000,  // finestra 60s
+    max: 120,          // max 120 richieste/min per IP
     standardHeaders: true,
     legacyHeaders: false,
   })
 );
 
-app.use("/health", healthRouter);
+
+app.use("/api", dishPhotosRouter);  // ← NUOVO (foto piatti: GET/POST/PATCH/DELETE)
+app.use("/api/chefs", chefsRouter); // rotte chefs esistenti
 app.use("/api/inquiries", inquiriesRouter);
 
-/* ────────────── Error handling ────────────── */
+/* ───────────────── Healthcheck ───────────────── */
+app.use("/health", healthRouter);
+
+/* ───────────────── Error handling ───────────────── */
 app.use(notFound);
 app.use(errorHandler);
 
