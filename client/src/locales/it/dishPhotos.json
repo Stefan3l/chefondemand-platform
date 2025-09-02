@@ -1,0 +1,47 @@
+{
+  "pageTitle": "Foto Piatti",
+  "addButton": "Aggiungi foto",
+  "uploadButton": "Carica foto",
+  "loading": "Caricamento...",
+  "crop": {
+    "title": "Ritaglia la tua foto",
+    "apply": "Applica ritaglio",
+    "cancel": "Annulla"
+  },
+  "description": {
+    "label": "Descrizione (opzionale)",
+    "placeholder": "es. Tagliatelle al tartufo"
+  },
+  "gallery": {
+    "title": "La tua galleria",
+    "loading": "Caricamento foto...",
+    "empty": "Non hai ancora aggiunto foto di piatti."
+  },
+  "delete": {
+    "open": "Elimina foto",
+    "title": "Eliminare questa foto?",
+    "message": "Sei sicuro di voler eliminare questa foto? L'azione non può essere annullata.",
+    "cancel": "Annulla",
+    "confirm": "Elimina"
+  },
+  "alt": {
+    "preview": "Anteprima"
+  },
+  "messages": {
+    "readyToUpload": "Ritaglio applicato. Pronto al caricamento.",
+    "uploadOk": "Foto caricata con successo.",
+    "deleteOk": "Foto eliminata.",
+    "errors": {
+      "noFile": "Seleziona prima un file.",
+      "noId": "Non sei autenticato.",
+      "uploadFailed": "Caricamento non riuscito. Riprova.",
+      "deleteFailed": "Eliminazione non riuscita. Riprova.",
+      "loadFailed": "Impossibile caricare le tue foto.",
+      "cropInvalid": "Area di ritaglio non valida.",
+      "canvas": "Canvas non supportato in questo browser."
+    }
+  },
+  "button": {
+    "name": "Chiudi"
+  }
+}
