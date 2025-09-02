@@ -10,23 +10,24 @@ datasource db {
 
 model Chef {
   id           String   @id @default(cuid())
-  firstName    String   @db.VarChar(60)   // Nome dello chef
-  lastName     String   @db.VarChar(60)   // Cognome dello chef
-  countryCode  String   @db.Char(2)       // Codice paese ISO2 (es. "IT", "BE")
-  phonePrefix  String   @db.VarChar(8)    // Prefisso telefonico (es. "+39")
-  phoneNumber  String   @db.VarChar(20)   // Numero locale senza prefisso
-  email        String   @unique @db.VarChar(255) // Email di login (univoca)
-  passwordHash String                      // Hash bcrypt (mai in chiaro)
+  firstName    String   @db.VarChar(60)
+  lastName     String   @db.VarChar(60)
+  countryCode  String   @db.Char(2)
+  phonePrefix  String   @db.VarChar(8)
+  phoneNumber  String   @db.VarChar(20)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // Relazioni
-  profile     ChefProfile?    @relation("ChefToProfile")      // 1–a–1 con ChefProfile
-  dishPhotos  ChefDishPhoto[] @relation("ChefToDishPhotos")   // 1–a–N: foto dei piatti dello chef
+  profile     ChefProfile?    @relation("ChefToProfile")
+  dishPhotos  ChefDishPhoto[] @relation("ChefToDishPhotos")
+  dishes      Dish[]          @relation("ChefToDishes") // 👈
 
-  // Unicità combinata su prefisso + numero
   @@unique([phonePrefix, phoneNumber], name: "unique_phone")
 }
+
+
 
 
 // Tabella ChefPro
@@ -91,3 +92,28 @@ model ChefDishPhoto {
   // Indice per ricerche rapide per chef
   @@index([chefId], map: "idx_dishphoto_chefid")
 }
+
+enum DishCategory {
+  ANTIPASTO
+  PRIMO_PIATTO
+  PIATTO_PRINCIPALE
+  DESSERT
+  ALTRO
+}
+
+/// Tabella Piatti (un piatto = una riga)
+model Dish {
+  id          String       @id @default(cuid())
+  chefId      String
+  chef        Chef         @relation("ChefToDishes", fields: [chefId], references: [id], onDelete: Cascade)
+
+  nomePiatto  String       @db.VarChar(120)
+  categoria   DishCategory // 👈 enum stabil în DB
+  descrizione String?      @db.VarChar(500)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([chefId], map: "idx_dish_chefid")
+}
+

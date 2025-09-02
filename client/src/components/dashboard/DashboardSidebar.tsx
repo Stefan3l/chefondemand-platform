@@ -260,7 +260,7 @@ export default function DashboardSidebar({
                   <BookOpenText size={20} /> {t("nav.menu")}
                 </Link>
                 <Link
-                  href={`${base}/dishes`}
+                  href={`${base}/menu-piatti/piatti`}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2 text-md text-white/60 bg-black/20 transition-all duration-300 ${hoverClass}`}
                 >
                   <Pizza size={20} /> {t("nav.dishes")}

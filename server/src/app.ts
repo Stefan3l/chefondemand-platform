@@ -10,7 +10,8 @@ import path from "path";
 
 // routes principali
 import chefsRouter from "./modules/chefs/routes/chefs.routes";
-import dishPhotosRouter from "./modules/chefs/routes/dishPhotos.routes"; // ← NUOVO
+import dishPhotosRouter from "./modules/chefs/routes/dishPhotos.routes"; // ← FOTO PIATTI
+import dishesRouter from "./modules/chefs/routes/dishes.router";        // ← NUOVO: PIATTI
 import { healthRouter } from "./modules/health/health";
 import { inquiriesRouter } from "./modules/inquiries/inquiries.routes";
 
@@ -97,8 +98,10 @@ app.use(
   })
 );
 
-
-app.use("/api", dishPhotosRouter);  // ← NUOVO (foto piatti: GET/POST/PATCH/DELETE)
+// ───────────────── Montaggio router API ─────────────────
+// Nota: ogni router espone il proprio prefisso (es. /chefs/:chefId/dish-photos, /chefs/:chefId/dishes)
+app.use("/api", dishPhotosRouter);  // foto piatti: GET/POST/PATCH/DELETE
+app.use("/api", dishesRouter);      // ← NUOVO: piatti (Dish) GET/POST/PATCH/DELETE
 app.use("/api/chefs", chefsRouter); // rotte chefs esistenti
 app.use("/api/inquiries", inquiriesRouter);
 
