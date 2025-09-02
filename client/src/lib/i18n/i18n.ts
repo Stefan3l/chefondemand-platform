@@ -22,6 +22,8 @@ import itRaggioServizio from '@/locales/it/raggio-servizio.json';
 import enRaggioServizio from '@/locales/en/raggio-servizio.json';
 import itDishPhotos from '@/locales/it/dishPhotos.json';
 import enDishPhotos from '@/locales/en/dishPhotos.json';
+import itDishes from '@/locales/it/dishes.json';
+import enDishes  from '@/locales/en/dishes.json';
 
 export type NamespaceData = Record<string, string>;
 
@@ -37,7 +39,8 @@ export const translations = {
     profileInfo: itInfoPersonali,
     competenze: itCompetenze,
     raggioServizio: itRaggioServizio,
-    dishPhotos: itDishPhotos
+    dishPhotos: itDishPhotos,
+    dishes: itDishes
   },
   en: {
     common: enCommon,
@@ -50,7 +53,8 @@ export const translations = {
     profileInfo: enInfoPersonali,
     competenze: enCompetenze,
     raggioServizio: enRaggioServizio,
-    dishPhotos: enDishPhotos
+    dishPhotos: enDishPhotos,
+    dishes: enDishes
   },
 } as const;
 

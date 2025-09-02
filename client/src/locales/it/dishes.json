@@ -1,0 +1,69 @@
+{
+  "dishes": {
+    "pageTitle": "I miei piatti",
+    "count": {
+      "zero": "0 piatti",
+      "one": "1 piatto",
+      "other": "{{count}} piatti"
+    },
+    "loading": "Caricamento…",
+    "empty": "Nessun piatto presente.",
+    "filter": {
+      "all": "Tutti i piatti",
+      "label": "Filtra per categoria"
+    },
+    "buttons": {
+      "add": "Aggiungi piatto",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "cancel": "Annulla",
+      "save": "Salva piatto",
+      "saveChanges": "Salva modifiche",
+      "deleteConfirm": "Elimina",
+      "close": "Chiudi"
+    },
+    "modal": {
+      "addTitle": "Aggiungi piatto",
+      "editTitle": "Modifica piatto"
+    },
+    "fields": {
+      "name": {
+        "label": "Nome del piatto",
+        "placeholder": "Es. Risotto ai funghi porcini"
+      },
+      "category": {
+        "label": "Categoria del piatto",
+        "placeholder": "Seleziona la categoria"
+      },
+      "description": {
+        "label": "Descrizione",
+        "placeholder": "Descrivi gli ingredienti principali e/o la preparazione…"
+      }
+    },
+    "deleteDialog": {
+      "title": "Elimina piatto",
+      "message": "Sei sicuro di voler eliminare questo piatto? L’azione è irreversibile."
+    },
+    "notifications": {
+      "createOk": "Piatto creato con successo.",
+      "updateOk": "Piatto aggiornato con successo.",
+      "deleteOk": "Piatto eliminato.",
+      "loadError": "Impossibile caricare i piatti.",
+      "opFailed": "Operazione fallita.",
+      "createFailed": "Creazione piatto fallita.",
+      "updateFailed": "Aggiornamento piatto fallito.",
+      "deleteFailed": "Eliminazione fallita."
+    },
+    "errors": {
+      "nameRequired": "Il nome del piatto è obbligatorio.",
+      "categoryRequired": "Seleziona la categoria del piatto."
+    },
+    "categories": {
+      "ANTIPASTO": "Antipasto",
+      "PRIMO_PIATTO": "Primo Piatto",
+      "PIATTO_PRINCIPALE": "Piatto Principale",
+      "DESSERT": "Dessert",
+      "ALTRO": "Altro"
+    }
+  }
+}

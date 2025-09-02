@@ -1,0 +1,69 @@
+{
+  "dishes": {
+    "pageTitle": "My dishes",
+    "count": {
+      "zero": "0 dishes",
+      "one": "1 dish",
+      "other": "{{count}} dishes"
+    },
+    "loading": "Loading…",
+    "empty": "No dishes yet.",
+    "filter": {
+      "all": "All dishes",
+      "label": "Filter by category"
+    },
+    "buttons": {
+      "add": "Add dish",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save dish",
+      "saveChanges": "Save changes",
+      "deleteConfirm": "Delete",
+      "close": "Close"
+    },
+    "modal": {
+      "addTitle": "Add dish",
+      "editTitle": "Edit dish"
+    },
+    "fields": {
+      "name": {
+        "label": "Dish name",
+        "placeholder": "e.g., Porcini mushroom risotto"
+      },
+      "category": {
+        "label": "Dish category",
+        "placeholder": "Select a category"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Describe the main ingredients and/or preparation…"
+      }
+    },
+    "deleteDialog": {
+      "title": "Delete dish",
+      "message": "Are you sure you want to delete this dish? This action cannot be undone."
+    },
+    "notifications": {
+      "createOk": "Dish created successfully.",
+      "updateOk": "Dish updated successfully.",
+      "deleteOk": "Dish deleted.",
+      "loadError": "Unable to load dishes.",
+      "opFailed": "Operation failed.",
+      "createFailed": "Dish creation failed.",
+      "updateFailed": "Dish update failed.",
+      "deleteFailed": "Delete failed."
+    },
+    "errors": {
+      "nameRequired": "Dish name is required.",
+      "categoryRequired": "Please select a dish category."
+    },
+    "categories": {
+      "ANTIPASTO": "Appetizer",
+      "PRIMO_PIATTO": "First Course",
+      "PIATTO_PRINCIPALE": "Main Course",
+      "DESSERT": "Dessert",
+      "ALTRO": "Other"
+    }
+  }
+}
