@@ -8,10 +8,12 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import path from "path";
 
-// routes principali
+// rotte principali
 import chefsRouter from "./modules/chefs/routes/chefs.routes";
-import dishPhotosRouter from "./modules/chefs/routes/dishPhotos.routes"; // ← FOTO PIATTI
-import dishesRouter from "./modules/chefs/routes/dishes.router";        // ← NUOVO: PIATTI
+import dishPhotosRouter from "./modules/chefs/routes/dishPhotos.routes"; // ← foto piatti
+import dishesRouter from "./modules/chefs/routes/dishes.router";        // ← piatti
+import menuRouter from "./modules/chefs/routes/menu.routes";            // ← menu
+import menuDishRouter from "./modules/chefs/routes/menuDish.routes"; // ← menu-dishes
 import { healthRouter } from "./modules/health/health";
 import { inquiriesRouter } from "./modules/inquiries/inquiries.routes";
 
@@ -55,10 +57,11 @@ app.use(
 );
 
 app.use(compression());
+
 // Body parser (limite ragionevole per payload JSON)
 app.use(express.json({ limit: "1mb" }));
 
-/* ───────────────── Piccola protezione URL: rimuove CR/LF/TAB percent-encoded ───────────────── */
+/* ───────────────── Protezione URL minima: rimuove CR/LF/TAB percent-encoded ───────────────── */
 app.use((req, _res, next) => {
   const cleaned = req.url.replace(/%0A|%0D|%09/gi, "");
   if (cleaned !== req.url) req.url = cleaned;
@@ -87,22 +90,24 @@ app.use(
   })
 );
 
-/* Lo applichiamo PRIMA di montare le rotte API, così copre tutte le sotto-rotte. */
+/* ───────────────── Rate limit API (prima del montaggio rotte) ───────────────── */
 app.use(
   "/api",
   rateLimit({
-    windowMs: 60_000,  // finestra 60s
-    max: 120,          // max 120 richieste/min per IP
+    windowMs: 60_000, // finestra 60s
+    max: 120,         // max 120 richieste/min per IP
     standardHeaders: true,
     legacyHeaders: false,
   })
 );
 
 // ───────────────── Montaggio router API ─────────────────
-// Nota: ogni router espone il proprio prefisso (es. /chefs/:chefId/dish-photos, /chefs/:chefId/dishes)
-app.use("/api", dishPhotosRouter);  // foto piatti: GET/POST/PATCH/DELETE
-app.use("/api", dishesRouter);      // ← NUOVO: piatti (Dish) GET/POST/PATCH/DELETE
-app.use("/api/chefs", chefsRouter); // rotte chefs esistenti
+// Nota: ogni router espone il proprio prefisso (es. /chefs/:chefId/...).
+app.use("/api", dishPhotosRouter);      // foto piatti: GET/POST/PATCH/DELETE
+app.use("/api", dishesRouter);          // piatti (Dish) GET/POST/PATCH/DELETE
+app.use("/api/chefs", menuRouter);      // /api/chefs/:chefId/menus
+app.use("/api/chefs", menuDishRouter);  // /api/chefs/:chefId/menus/:menuId/dishes
+app.use("/api/chefs", chefsRouter);     // rotte chefs esistenti
 app.use("/api/inquiries", inquiriesRouter);
 
 /* ───────────────── Healthcheck ───────────────── */
