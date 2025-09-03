@@ -62,6 +62,7 @@ function FancySelect<T extends string>({
     Math.max(0, options.findIndex((o) => o.value === value))
   );
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null); // ← Manteniamo un ref del trigger per gestire il focus dopo la selezione
 
   // chiusura a click fuori
   useEffect(() => {
@@ -86,6 +87,10 @@ function FancySelect<T extends string>({
   const select = (v: T) => {
     onChange(v);
     setOpen(false);
+    // Evita riaperture involontarie: togli il focus al trigger subito dopo la scelta
+    setTimeout(() => {
+      triggerRef.current?.blur();
+    }, 0);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -120,16 +125,17 @@ function FancySelect<T extends string>({
     <div ref={rootRef} className={`relative ${className}`}>
       {/* Trigger */}
       <button
+        ref={triggerRef} // ← Ref per gestire il blur post-selezione
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
         onClick={() => setOpen((v) => !v)}
         onKeyDown={onKeyDown}
-        className="w-[160px] md:w-full appearance-none rounded-full border border-[#C7AE6A33] bg-neutral-900/80 px-4 py-2 pr-8 text-left text-sm outline-none focus:border-[#C7AE6A] focus:ring-1 focus:ring-[#C7AE6A]"
+        className="w-full appearance-none rounded-full border border-[#C7AE6A33] bg-neutral-900/80 px-4 py-2 pr-8 text-left text-sm outline-none focus:border-[#C7AE6A33] focus:ring-1 focus:ring-[#C7AE6A33]"
       >
         <span>{currentLabel}</span>
-        <span className="pointer-events-none absolute right-12 md:right-3 top-1/2 -translate-y-1/2 text-neutral-400">
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
           ▾
         </span>
       </button>
@@ -138,7 +144,7 @@ function FancySelect<T extends string>({
       {open && (
         <div
           role="listbox"
-          className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-[#C7AE6A33] bg-black text-[#C7AE6A] shadow-[0_10px_24px_rgba(0,0,0,0.5)]"
+          className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-[#C7AE6A33] bg-neutral-900 text-white shadow-[0_10px_24px_rgba(0,0,0,0.5)]"
         >
           {options.map((opt, idx) => {
             const active = value === opt.value;
@@ -150,7 +156,11 @@ function FancySelect<T extends string>({
                 aria-selected={active}
                 type="button"
                 onMouseEnter={() => setFocusIndex(idx)}
-                onClick={() => select(opt.value)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation(); // ← Impedisce il bubbling verso il trigger che potrebbe riaprire il menu
+                  select(opt.value);
+                }}
                 className={[
                   "block w-full px-3 py-2 text-left text-sm transition",
                   active ? "bg-[#C7AE6A22]" : "",
@@ -443,7 +453,7 @@ export default function Piatti() {
   );
 
   return (
-    <div className="min-h-dvh bg-neutral-900 text-neutral-100 px-4">
+    <div className="min-h-dvh bg-neutral-900 text-neutral-100 px-4 mb-14 lg:mb-0">
       {/* Header */}
       <div className="py-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
@@ -453,14 +463,14 @@ export default function Piatti() {
           <Paragraph size="sm" className="mb-2 text-neutral-500">{countLabel}</Paragraph>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col  sm:flex-row items-start  gap-3 ">
           {/* Filtro con FancySelect (stesso stile richiesto) */}
           <FancySelect<Filter>
             value={filter}
             onChange={(v) => setFilter(v)}
             options={filterOptions}
             aria-label={T("filter.label")}
-            className="min-w-[200px]"
+            className="w-full sm:min-w-[240px]"
           />
 
           {/* Aggiungi piatto */}
@@ -468,7 +478,7 @@ export default function Piatti() {
            size="lg"
             type="button"
             variant="primary"
-            className="inline-flex items-center gap-2 h-10 px-4"
+            className="inline-flex items-center gap-2 h-10 px-4 w-full sm:min-w-[240px]"
             onClick={openCreate}
             disabled={!chefId}
             title={undefined}
@@ -538,7 +548,7 @@ export default function Piatti() {
                   value={modal.nomePiatto}
                   onChange={(e) => setModal((m) => (m.open ? { ...m, nomePiatto: e.target.value } : m))}
                   placeholder={T("fields.name.placeholder")}
-                  className="mt-2 w-full rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-neutral-100 placeholder-neutral-500 outline-none focus:border-[#C7AE6A] focus:ring-1 focus:ring-[#C7AE6A]"
+                  className="mt-2 w-full rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-neutral-100 placeholder-neutral-500 outline-none focus:border-[#C7AE6A33] focus:ring-1 focus:ring-[#C7AE6A33]"
                 />
               </label>
 
@@ -547,15 +557,18 @@ export default function Piatti() {
                 {/* FancySelect ANCHE nella modale, con placeholder */}
                 <div className="mt-2">
                   <FancySelect<ModalCatValue>
-                    value={(modal.categoria || PLH) as ModalCatValue}
+                    value={(modal.categoria || "__PLH__") as ModalCatValue}
                     onChange={(v) =>
                       setModal((m) =>
                         m.open
-                          ? { ...m, categoria: v === PLH ? "" : (v as DishCategory) }
+                          ? { ...m, categoria: v === "__PLH__" ? "" : (v as DishCategory) }
                           : m
                       )
                     }
-                    options={modalCategoryOptions}
+                    options={[
+                      { value: "__PLH__", label: T("fields.category.placeholder") },
+                      ...CATEGORY_VALUES.map((c) => ({ value: c as ModalCatValue, label: catLabel(c) })),
+                    ]}
                     aria-label={T("fields.category.label")}
                   />
                 </div>
@@ -568,7 +581,7 @@ export default function Piatti() {
                   onChange={(e) => setModal((m) => (m.open ? { ...m, descrizione: e.target.value } : m))}
                   placeholder={T("fields.description.placeholder")}
                   rows={4}
-                  className="mt-2 w-full rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-neutral-100 placeholder-neutral-500 outline-none focus:border-[#C7AE6A] focus:ring-1 focus:ring-[#C7AE6A]"
+                  className="mt-2 w-full rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-neutral-100 placeholder-neutral-500 outline-none focus:border-[#C7AE6A33] focus:ring-1 focus:ring-[#C7AE6A33]"
                 />
               </label>
             </div>
