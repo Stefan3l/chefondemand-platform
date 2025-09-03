@@ -5,6 +5,7 @@ export interface ChefProfileMini {
 export interface ChefMeDTO {
   id: string;
   firstName: string;
+  
  
   profile: ChefProfileMini | null;
 }

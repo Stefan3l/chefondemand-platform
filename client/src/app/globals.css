@@ -25,6 +25,17 @@
                Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-/* Ascunde scrollbarul dar păstrează scrollul */
-.no-scrollbar::-webkit-scrollbar { width: 0; height: 0; }
-.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+/* ───────────────────────── Modale: nascondi scrollbar visivo ───────────────────────── */
+/* Firefox */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+/* IE/Edge */
+.scrollbar-none {
+  -ms-overflow-style: none;
+}
+/* WebKit */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
