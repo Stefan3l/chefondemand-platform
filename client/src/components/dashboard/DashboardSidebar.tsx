@@ -254,7 +254,7 @@ export default function DashboardSidebar({
                   <Camera size={20} /> Foto Piatti
                 </Link>
                 <Link
-                  href={`${base}/menu`}
+                  href={`${base}/menu-piatti/menu`}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2 text-md text-white/60 bg-black/20 transition-all duration-300 ${hoverClass}`}
                 >
                   <BookOpenText size={20} /> {t("nav.menu")}

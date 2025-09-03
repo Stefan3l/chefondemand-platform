@@ -1,3 +1,8 @@
+// ───────────────────────────────────────────────────────────────
+// Prisma Schema
+// Tutti i commenti sono in italiano.
+// ───────────────────────────────────────────────────────────────
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +12,42 @@ datasource db {
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
+
+// ───────────────────────────────────────────────────────────────
+// Enum applicativi
+// ───────────────────────────────────────────────────────────────
+
+// Categoria del piatto
+enum DishCategory {
+  ANTIPASTO
+  PRIMO_PIATTO
+  PIATTO_PRINCIPALE
+  DESSERT
+  ALTRO
+}
+
+// Bilancio del menu
+enum MenuBalance {
+  GUSTOSA
+  EQUILIBRATO
+  LEGGERA
+}
+
+// Tipologia di cucina (massimo 3 valori selezionabili lato API)
+enum CuisineType {
+  LOCALE
+  GIAPPONESE
+  MEDITERRANEO
+  BBQ
+  FRUTTI_DI_MARE_PESCE
+  SALUTARE
+  FUSION
+  SORPRESA
+}
+
+// ───────────────────────────────────────────────────────────────
+// Modelli dominio
+// ───────────────────────────────────────────────────────────────
 
 model Chef {
   id           String   @id @default(cuid())
@@ -20,21 +61,22 @@ model Chef {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Relazioni 1–a–1 e 1–a–N
   profile     ChefProfile?    @relation("ChefToProfile")
   dishPhotos  ChefDishPhoto[] @relation("ChefToDishPhotos")
-  dishes      Dish[]          @relation("ChefToDishes") // 👈
+  dishes      Dish[]          @relation("ChefToDishes")
+  menus       Menu[]          @relation("ChefToMenus")         // 👈 menu creati dallo chef
+  menuDishes  MenuDish[]      @relation("ChefToMenuDishes")    // 👈 righe di menu (collegamenti)
 
+  // Unicità numero di telefono (prefisso + numero)
   @@unique([phonePrefix, phoneNumber], name: "unique_phone")
 }
 
-
-
-
-// Tabella ChefPro
+// Profilo chef (1–a–1)
 model ChefProfile {
   id String @id @default(cuid())
 
-  // cheie străină unică (1-la-1)
+  // Chiave esterna (unica) verso Chef
   chefId String @unique
   chef   Chef   @relation("ChefToProfile", fields: [chefId], references: [id], onDelete: Cascade)
 
@@ -49,41 +91,35 @@ model ChefProfile {
   // Website
   website String? @db.VarChar(255)
 
-  // Array-uri (PostgreSQL)
-  languages String[] // opțional; salvezi [] din API 
-  skills    String[] // max 5 — validăm în API
+  // Array (PostgreSQL)
+  languages String[] // opzionale; salvare [] lato API se assente
+  skills    String[] // max 5 — validare lato API
 
-  // Locație / arie
+  // Localizzazione / raggio servizio
   address         String? @db.VarChar(255)
   region          String? @db.VarChar(100)
-  country         String? @db.Char(2) 
+  country         String? @db.Char(2)
   serviceRadiusKm Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-
-/**
- * Foto di piatto (una riga = una foto).
- * Collegata allo chef tramite chefId (relazione 1–a–N).
- * La descrizione è opzionale.
- */
+// Foto di piatto (1 riga = 1 foto)
 model ChefDishPhoto {
   id String @id @default(cuid())
 
-  
   chefId String
   chef   Chef   @relation("ChefToDishPhotos", fields: [chefId], references: [id], onDelete: Cascade)
 
   // File immagine
-  imageUrl    String  @db.VarChar(512)  // URL pubblico (es. S3/Cloudinary)
-  imagePath   String? @db.VarChar(512)  // Percorso interno (facoltativo)
-  imageMime   String? @db.VarChar(100)  // MIME (es. "image/jpeg")
-  imageWidth  Int?                     // Larghezza in pixel (facoltativo)
-  imageHeight Int?                     // Altezza in pixel (facoltativo)
+  imageUrl    String  @db.VarChar(512) // URL pubblico (es. S3/Cloudinary o /static)
+  imagePath   String? @db.VarChar(512) // Percorso interno opzionale
+  imageMime   String? @db.VarChar(100) // MIME (es. "image/jpeg")
+  imageWidth  Int?
+  imageHeight Int?
 
-  // Descrizione breve del piatto (opzionale)
+  // Descrizione breve (opzionale)
   description String? @db.VarChar(240)
 
   createdAt DateTime @default(now())
@@ -93,23 +129,18 @@ model ChefDishPhoto {
   @@index([chefId], map: "idx_dishphoto_chefid")
 }
 
-enum DishCategory {
-  ANTIPASTO
-  PRIMO_PIATTO
-  PIATTO_PRINCIPALE
-  DESSERT
-  ALTRO
-}
-
-/// Tabella Piatti (un piatto = una riga)
+// Tabella Piatti (1 riga = 1 piatto creato dallo chef)
 model Dish {
   id          String       @id @default(cuid())
   chefId      String
   chef        Chef         @relation("ChefToDishes", fields: [chefId], references: [id], onDelete: Cascade)
 
   nomePiatto  String       @db.VarChar(120)
-  categoria   DishCategory // 👈 enum stabil în DB
+  categoria   DishCategory
   descrizione String?      @db.VarChar(500)
+
+  // (Opzionale) collegamenti inversi alle righe di menu che includono questo piatto
+  menuDishes  MenuDish[]
 
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -117,3 +148,65 @@ model Dish {
   @@index([chefId], map: "idx_dish_chefid")
 }
 
+// ───────────────────────────────────────────────────────────────
+// Menu: entità principale creata dallo chef
+// ───────────────────────────────────────────────────────────────
+
+model Menu {
+  id    String @id @default(cuid())
+
+  chefId String
+  chef   Chef   @relation("ChefToMenus", fields: [chefId], references: [id], onDelete: Cascade)
+
+  // Dati base del menu
+  nome        String   @db.VarChar(120)
+  descrizione String?  @db.VarChar(500)
+
+  // Immagine (opzionale)
+  imageUrl  String? @db.VarChar(512)
+  imagePath String? @db.VarChar(512)
+
+  // Bilancio e Tipi di Cibo (array enum in PostgreSQL)
+  balance      MenuBalance
+  cuisineTypes CuisineType[] // vincolo "max 3" da applicare lato API/servizio
+
+  // Righe del menu (piatti inclusi)
+  menuDishes MenuDish[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chefId], map: "idx_menu_chefid")
+}
+
+// ───────────────────────────────────────────────────────────────
+// MenuDish: riga di collegamento tra Menu e Dish con "snapshot"
+// ───────────────────────────────────────────────────────────────
+
+model MenuDish {
+  id String @id @default(cuid())
+
+  chefId String
+  chef   Chef   @relation("ChefToMenuDishes", fields: [chefId], references: [id], onDelete: Cascade)
+
+  menuId String
+  menu   Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  dishId String
+  dish   Dish   @relation(fields: [dishId], references: [id], onDelete: Restrict)
+
+  // Snapshot dei dati del piatto al momento dell'inclusione nel menu
+  categoria   DishCategory
+  nomePiatto  String  @db.VarChar(120)
+  descrizione String? @db.VarChar(500)
+
+  // Ordinamento facoltativo all'interno del menu
+  ordine Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chefId], map: "idx_menudish_chefid")
+  @@index([menuId], map: "idx_menudish_menuid")
+  @@unique([menuId, dishId], map: "uq_menu_dish_once") // evita duplicati dello stesso piatto nel menu
+}
