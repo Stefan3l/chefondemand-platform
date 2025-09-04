@@ -1,4 +1,3 @@
-// modules/chefs/menu/menu.controller.ts
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { menuService } from "../services/menu.service";
@@ -12,7 +11,6 @@ import {
 } from "../validators/menu.validator";
 
 // ───────────────── Util: wrapper async ─────────────────
-// Piccolo helper per propagare gli errori ad Express.
 const asyncHandler =
   <T extends (req: Request, res: Response, next: NextFunction) => Promise<unknown>>(fn: T) =>
   (req: Request, res: Response, next: NextFunction) =>
@@ -21,6 +19,18 @@ const asyncHandler =
 // ───────────────── Helpers risposta ─────────────────
 function ok<T>(res: Response, data: T, status = 200) {
   return res.status(status).json({ ok: true, data });
+}
+
+// Piccola rete di sicurezza: rimuove valori blob:/data:/file:
+function sanitizeImageFields<T extends { imageUrl?: string | null; imagePath?: string | null }>(body: T) {
+  const safe = { ...body };
+  const bad = (v?: string | null) =>
+    typeof v === "string" &&
+    (v.startsWith("blob:") || v.startsWith("data:") || v.startsWith("file:") || v.startsWith("about:"));
+
+  if (bad(safe.imageUrl)) safe.imageUrl = undefined as any;
+  if (bad(safe.imagePath)) safe.imagePath = undefined as any;
+  return safe;
 }
 
 // ───────────────── Controller ─────────────────
@@ -43,7 +53,8 @@ export const getMenu = asyncHandler(async (req, res) => {
 
 export const createMenu = asyncHandler(async (req, res) => {
   const { chefId } = chefIdParamSchema.parse(req.params);
-  const body = createMenuSchema.parse(req.body) as CreateMenuInput;
+  const parsed = createMenuSchema.parse(req.body) as CreateMenuInput;
+  const body = sanitizeImageFields(parsed);
 
   // sicurezza: lunghezza array
   if (body.cuisineTypes && body.cuisineTypes.length > 3) {
@@ -54,8 +65,8 @@ export const createMenu = asyncHandler(async (req, res) => {
     chefId,
     nome: body.nome,
     descrizione: body.descrizione,
-    imageUrl: body.imageUrl,
-    imagePath: body.imagePath,
+    imageUrl: body.imageUrl ?? null,
+    imagePath: body.imagePath ?? null,
     balance: body.balance,
     cuisineTypes: body.cuisineTypes ?? [],
   });
@@ -66,9 +77,10 @@ export const createMenu = asyncHandler(async (req, res) => {
 export const updateMenu = asyncHandler(async (req, res) => {
   const { chefId } = chefIdParamSchema.parse(req.params);
   const { menuId } = menuIdParamSchema.parse(req.params);
-  const body = updateMenuSchema.parse(req.body) as UpdateMenuInput;
-
   await menuService.assertOwnedByChef(chefId, menuId);
+
+  const parsed = updateMenuSchema.parse(req.body) as UpdateMenuInput;
+  const body = sanitizeImageFields(parsed);
 
   if (body.cuisineTypes && body.cuisineTypes.length > 3) {
     return res.status(400).json({ ok: false, error: "Massimo 3 tipi di cucina" });
@@ -77,6 +89,7 @@ export const updateMenu = asyncHandler(async (req, res) => {
   const updated = await menuService.update(chefId, menuId, {
     ...(body.nome !== undefined ? { nome: body.nome } : {}),
     ...(body.descrizione !== undefined ? { descrizione: body.descrizione } : {}),
+    // Consente anche null: usato per cancellare immagine (set NULL in DB)
     ...(body.imageUrl !== undefined ? { imageUrl: body.imageUrl } : {}),
     ...(body.imagePath !== undefined ? { imagePath: body.imagePath } : {}),
     ...(body.balance !== undefined ? { balance: body.balance } : {}),
