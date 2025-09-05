@@ -26,6 +26,7 @@ type ChefProfileRaw = {
   region?: unknown;
   country?: unknown;          // ISO2
   serviceRadiusKm?: unknown;
+  serviceMultiDay?: unknown;
 };
 
 type ChefProfileEnvelope =
@@ -37,6 +38,7 @@ type ChefProfile = {
   region: string;
   country: string;            // ISO2
   serviceRadiusKm: number;
+  serviceMultiDay: boolean;
 };
 
 type Props = {
@@ -94,6 +96,7 @@ function normalizeProfile(raw: ChefProfileRaw, defaults: ChefProfile): ChefProfi
     region: toStringOrEmpty(raw.region) || defaults.region,
     country: normalizeCountry(raw.country, defaults.country),
     serviceRadiusKm: toNumberOr(raw.serviceRadiusKm, defaults.serviceRadiusKm),
+    serviceMultiDay: typeof raw.serviceMultiDay === "boolean" ? raw.serviceMultiDay : defaults.serviceMultiDay,
   };
 }
 
@@ -137,6 +140,7 @@ export default function RaggioServizioForm({
   const [region, setRegion] = useState(initialRegion);
   const [country, setCountry] = useState(initialCountry); // ISO2
   const [radiusKm, setRadiusKm] = useState(initialRadiusKm);
+  const [serviceMultiDay, setServiceMultiDay] = useState(false); // 👈 AGGIUNGI QUESTA RIGA
   const [saving, setSaving] = useState(false);
 
   // Dirty + loading + feedback
@@ -258,6 +262,7 @@ export default function RaggioServizioForm({
           region: "",
           country: "IT",
           serviceRadiusKm: 50,
+          serviceMultiDay: false,
         });
 
         // setăm form doar dacă nu e dirty (sau am cerut force)
@@ -265,9 +270,10 @@ export default function RaggioServizioForm({
         setRegion(normalized.region);
         setCountry(normalized.country);
         setRadiusKm(normalized.serviceRadiusKm);
+        setServiceMultiDay(normalized.serviceMultiDay); // 👈 aggiorna stato locale
         setIsDirty(false);
 
-        lastDbProfileRef.current = normalized;
+        lastDbProfileRef.current = normalized; // 👈 salva și serviceMultiDay
 
         // centrează harta după address (o singură dată), doar pentru IT
         if (isLoaded && normalized.country === "IT" && normalized.address && !hasGeocodedRef.current) {
@@ -333,10 +339,11 @@ export default function RaggioServizioForm({
         region: region || null,
         country, // ISO2
         serviceRadiusKm: radiusKm,
+        serviceMultiDay, // 👈 invia sempre il valore attuale
       });
 
       setIsDirty(false);
-      lastDbProfileRef.current = { address, region, country, serviceRadiusKm: radiusKm };
+      lastDbProfileRef.current = { address, region, country, serviceRadiusKm: radiusKm, serviceMultiDay }; // 👈 aggiorna și aici
 
       setFeedback({
         type: "success",
@@ -367,6 +374,7 @@ export default function RaggioServizioForm({
   const onChangeRegion  = (v: string) => { setRegion(v);  setIsDirty(true); };
   const onChangeCountry = (v: string) => { setCountry(v); setIsDirty(true); };
   const onChangeRadius  = (v: number) => { setRadiusKm(v); setIsDirty(true); };
+  const onChangeServiceMultiDay = (v: boolean) => { setServiceMultiDay(v); setIsDirty(true); };
 
   return (
     <form
@@ -513,6 +521,31 @@ export default function RaggioServizioForm({
         <div className="mt-6 rounded-lg border border-amber-800/40 bg-amber-900/10 p-3 text-xs text-amber-300">
           <strong>{t("profile.serviceRadius.notice.title")}</strong>{" "}
           {t("profile.serviceRadius.notice.text")}
+        </div>
+      </div>
+
+      {/* MultiDay Select */}
+      <div className="mt-8">
+        <label className="block text-sm text-[#C7AE6A] font-semibold mb-2">
+          {t("profile.serviceMultiDay.label")}
+        </label>
+        <div className="relative">
+          <select
+            className="w-full rounded-lg border border-zinc-800 bg-black px-3 py-2 text-zinc-100 outline-none focus:border-[#C7AE6A33] focus:ring-1 focus:ring-[#C7AE6A33] appearance-none"
+            value={serviceMultiDay ? "yes" : "no"}
+            onChange={e => onChangeServiceMultiDay(e.target.value === "yes")}
+            disabled={loadingProfile}
+            style={{ backgroundColor: "#000" }} // forzatura bg nero anche su browser che ignorano bg nelle select
+          >
+            <option value="yes">{t("profile.serviceMultiDay.yes")}</option>
+            <option value="no">{t("profile.serviceMultiDay.no")}</option>
+          </select>
+          <span
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500"
+            style={{ marginRight: "0.75rem" /* mr-3, uguale a px-3 della select */ }}
+          >
+            ▾
+          </span>
         </div>
       </div>
 

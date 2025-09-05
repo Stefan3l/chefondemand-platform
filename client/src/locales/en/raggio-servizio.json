@@ -53,6 +53,11 @@
         "validationFailed": "Some fields are invalid. Please review the highlighted inputs.",
         "networkError": "Network error. Check your connection and try again."
       }
+    },
+    "serviceMultiDay": {
+      "label": "Do you want to receive all MultiDay requests from all over Italy?",
+      "yes": "Yes, receive MultiDay requests from all over Italy",
+      "no": "No, only receive requests in your area"
     }
   },
   "onlyItaly": "Map available only for Italy."

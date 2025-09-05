@@ -53,6 +53,11 @@
         "validationFailed": "Alcuni campi non sono validi. Controlla gli input evidenziati.",
         "networkError": "Errore di rete. Controlla la connessione e riprova."
       }
+    },
+    "serviceMultiDay": {
+      "label": "Vuoi ricevere tutte le richieste MultiDay da tutta Italia?",
+      "yes": "Sì, ricevi richieste MultiDay da tutta Italia",
+      "no": "No, ricevi solo richieste nella tua zona"
     }
   },
   "onlyItaly": "Mappa disponibile solo per l'Italia."

@@ -18,6 +18,7 @@ const safeSelect = {
   region: true,
   country: true,
   serviceRadiusKm: true,
+  serviceMultiDay: true, // 👈 aggiungi questa riga
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.ChefProfileSelect;
