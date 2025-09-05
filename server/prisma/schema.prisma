@@ -45,6 +45,13 @@ enum CuisineType {
   SORPRESA
 }
 
+// Nuovo enum per il tipo di cibo
+enum FoodType {
+  CARNE
+  PESCE
+  VERDURA
+}
+
 // ───────────────────────────────────────────────────────────────
 // Modelli dominio
 // ───────────────────────────────────────────────────────────────
@@ -138,6 +145,7 @@ model Dish {
 
   nomePiatto  String       @db.VarChar(120)
   categoria   DishCategory
+  food_type   FoodType?    // Nuova colonna opzionale
   descrizione String?      @db.VarChar(500)
 
   // (Opzionale) collegamenti inversi alle righe di menu che includono questo piatto
