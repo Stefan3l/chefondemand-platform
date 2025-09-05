@@ -50,7 +50,7 @@ type Props = {
 
 // ---------- Const ----------
 const MIN_RADIUS = 5;
-const MAX_RADIUS = 150;
+const MAX_RADIUS = 600;
 
 const mapContainerStyle: React.CSSProperties = { width: "100%", height: "260px" };
 const DEFAULT_CENTER = { lat: 45.4642, lng: 9.19 }; // Milano
@@ -452,7 +452,7 @@ export default function RaggioServizioForm({
                 onLoad={onLoadMap}
                 mapContainerStyle={mapContainerStyle}
                 center={position}
-                zoom={11}
+                zoom={8} // era 11, acum mai mic pentru a vedea regiunea
                 options={mapOptions}
               >
                 <Marker
@@ -468,7 +468,12 @@ export default function RaggioServizioForm({
                 <Circle
                   center={position}
                   radius={radiusMeters}
-                  options={{ strokeOpacity: 0.6, strokeWeight: 1.5, fillOpacity: 0.12 }}
+                  options={{
+                    strokeColor: "#C7AE6A", // culoarea bordurii cercului
+                    strokeOpacity: 0.6,
+                    strokeWeight: 1.5,
+                    fillOpacity: 0.12
+                  }}
                 />
               </GoogleMap>
             ) : (
