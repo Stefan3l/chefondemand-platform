@@ -195,10 +195,10 @@ export default function MenuPage() {
           <div className="mx-auto mb-3 flex h-16 w-16 lg:h-24 lg:w-24 items-center justify-center rounded-full bg-[#C7AE6A1A]">
             <BookOpen className="h-8 w-8 lg:h-12 lg:w-12 text-[#C7AE6A]" />
           </div>
-          <Heading level="h3" className="font-semibold text-white">
+          <Heading level="h5" className="lg:text-2xl font-semibold ">
             Non hai ancora creato nessun menù
           </Heading>
-          <Paragraph size="sm" className="mt-2 text-sm text-neutral-400">
+          <Paragraph size="sm" className="mt-2 text-sm text-neutral-400 text-center">
             Crea il tuo primo menù e organizza i tuoi piatti in proposte complete.
           </Paragraph>
           <div className="mt-6 flex justify-center">

@@ -1,10 +1,19 @@
-// modules/chefs/menu/menu.validator.ts
 import { z } from "zod";
 import { CuisineType, MenuBalance } from "@prisma/client";
 
-// ───────────────── Validazioni (Zod) ─────────────────
-// Nota: niente `required_error` su `z.nativeEnum` per compatibilità con la tua versione di Zod.
+/* Helpers URL: accetta http/https oppure path relativo servito da /static */
+const isHttpOrStatic = (v: string) =>
+  /^https?:\/\//i.test(v) || v.startsWith("/static/");
 
+/* Non vogliamo mai salvare URL temporanei del browser */
+const isForbiddenScheme = (v: string) =>
+  v.startsWith("blob:") || v.startsWith("data:") || v.startsWith("file:") || v.startsWith("about:");
+
+/* Accetta path reale su disco dentro uploads/, usato per delete fisico opzionale */
+const isUploadsPath = (v: string) =>
+  v.startsWith("uploads/") && !v.includes("..");
+
+/* ───────── parametri ───────── */
 export const chefIdParamSchema = z.object({
   chefId: z.string().min(1, "chefId mancante"),
 });
@@ -13,71 +22,83 @@ export const menuIdParamSchema = z.object({
   menuId: z.string().min(1, "menuId mancante"),
 });
 
+/* ───────── campi immagine ─────────
+   - stringa vuota → undefined
+   - consente null per PATCH di rimozione
+   - vieta 'blob:'/'data:' ecc.
+   - imageUrl: http(s) OPPURE /static/...
+   - imagePath: uploads/... (per uso interno lato server)
+*/
+const imageUrlSchema = z
+  .union([z.string(), z.null()])
+  .transform((v) => (v === "" ? undefined : v))
+  .refine(
+    (v) =>
+      v === undefined ||
+      v === null ||
+      (typeof v === "string" && isHttpOrStatic(v) && !isForbiddenScheme(v)),
+    { message: "imageUrl non valida" }
+  )
+  .optional();
+
+const imagePathSchema = z
+  .union([z.string(), z.null()])
+  .transform((v) => (v === "" ? undefined : v))
+  .refine(
+    (v) =>
+      v === undefined ||
+      v === null ||
+      (typeof v === "string" && isUploadsPath(v) && !isForbiddenScheme(v)),
+    { message: "imagePath non valida" }
+  )
+  .optional();
+
+/* ───────── create ───────── */
 export const createMenuSchema = z.object({
-  // obbligatorio
   nome: z.string().min(1, "nome richiesto").max(120),
 
-  // opzionale, stringa vuota → undefined
   descrizione: z
-    .string()
-    .max(500, "descrizione troppo lunga")
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v === "" ? undefined : v)),
+    .union([z.string(), z.literal("")])
+    .transform((v) => (v === "" ? undefined : v))
+    .refine((v) => v === undefined || (typeof v === "string" && v.length <= 500), {
+      message: "descrizione troppo lunga",
+    })
+    .optional(),
 
-  // opzionale, valida URL; stringa vuota → undefined
-  imageUrl: z
-    .string()
-    .url("imageUrl non valida")
-    .max(512)
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v === "" ? undefined : v)),
+  imageUrl: imageUrlSchema,
+  imagePath: imagePathSchema,
 
-  // opzionale; stringa vuota → undefined
-  imagePath: z
-    .string()
-    .max(512)
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v === "" ? undefined : v)),
-
-  // obbligatorio (nessun param di opzioni per evitare errori TS)
   balance: z.nativeEnum(MenuBalance),
 
-  // massimo 3 tipi lato validazione
-  cuisineTypes: z.array(z.nativeEnum(CuisineType)).max(3, "massimo 3 tipi di cucina").optional().default([]),
+  cuisineTypes: z
+    .array(z.nativeEnum(CuisineType))
+    .max(3, "massimo 3 tipi di cucina")
+    .optional()
+    .default([]),
 });
 
+/* ───────── update (PATCH) ───────── */
 export const updateMenuSchema = z.object({
-  // tutti opzionali per PATCH
   nome: z.string().min(1, "nome richiesto").max(120).optional(),
 
   descrizione: z
-    .string()
-    .max(500, "descrizione troppo lunga")
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v === "" ? undefined : v)),
+    .union([z.string(), z.literal("")])
+    .transform((v) => (v === "" ? undefined : v))
+    .refine((v) => v === undefined || (typeof v === "string" && v.length <= 500), {
+      message: "descrizione troppo lunga",
+    })
+    .optional(),
 
-  imageUrl: z
-    .string()
-    .url("imageUrl non valida")
-    .max(512)
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v === "" ? undefined : v)),
-
-  imagePath: z
-    .string()
-    .max(512)
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v === "" ? undefined : v)),
+  // permette anche null per rimozione immagine
+  imageUrl: imageUrlSchema,
+  imagePath: imagePathSchema,
 
   balance: z.nativeEnum(MenuBalance).optional(),
 
-  cuisineTypes: z.array(z.nativeEnum(CuisineType)).max(3, "massimo 3 tipi di cucina").optional(),
+  cuisineTypes: z
+    .array(z.nativeEnum(CuisineType))
+    .max(3, "massimo 3 tipi di cucina")
+    .optional(),
 });
 
 export type CreateMenuInput = z.infer<typeof createMenuSchema>;

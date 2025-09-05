@@ -24,7 +24,6 @@ export default function ModalShell({
   open,
   onClose,
   ariaLabel,
-  maxWidth = "3xl",
   className = "",
   children,
 }: PropsWithChildren<ModalShellProps>) {
@@ -39,16 +38,6 @@ export default function ModalShell({
 
   if (!open) return null;
 
-  const maxWClass =
-    maxWidth === "sm" ? "max-w-sm" :
-    maxWidth === "md" ? "max-w-md" :
-    maxWidth === "lg" ? "max-w-lg" :
-    maxWidth === "xl" ? "max-w-xl" :
-    maxWidth === "2xl" ? "max-w-2xl" :
-    maxWidth === "3xl" ? "max-w-3xl" :
-    maxWidth === "4xl" ? "max-w-4xl" :
-    maxWidth === "5xl" ? "max-w-5xl" :
-    "max-w-6xl";
 
   return (
     <div
@@ -64,10 +53,10 @@ export default function ModalShell({
         <div
           className={[
             "w-full",
-            maxWClass,
+          
             "mx-auto rounded-2xl border border-[#C7AE6A33] bg-neutral-900 p-5 text-neutral-100",
             // pannello: altezza massima + scroll interno con scrollbar invisibile
-            "max-h-[calc(100dvh-5rem)] overflow-y-auto scrollbar-none",
+            " overflow-y-auto scrollbar-none",
             className,
           ].join(" ")}
           onClick={(e) => e.stopPropagation()}
