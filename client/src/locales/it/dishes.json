@@ -38,6 +38,13 @@
       "description": {
         "label": "Descrizione",
         "placeholder": "Descrivi gli ingredienti principali e/o la preparazione…"
+      },
+      "foodType": {
+        "label": "Tipo di cibo",
+        "placeholder": "Seleziona il tipo di cibo",
+        "carne": "Carne (es. pollo, manzo, maiale)",
+        "verdura": "Verdura (es. insalata, spinaci, zucchine)",
+        "pesce": "Pesce (es. salmone, tonno, gamberi)"
       }
     },
     "deleteDialog": {
@@ -56,7 +63,8 @@
     },
     "errors": {
       "nameRequired": "Il nome del piatto è obbligatorio.",
-      "categoryRequired": "Seleziona la categoria del piatto."
+      "categoryRequired": "Seleziona la categoria del piatto.",
+      "foodTypeRequired": "Seleziona il tipo di cibo."
     },
     "categories": {
       "ANTIPASTO": "Antipasto",
@@ -64,6 +72,11 @@
       "PIATTO_PRINCIPALE": "Piatto Principale",
       "DESSERT": "Dessert",
       "ALTRO": "Altro"
+    },
+    "foodTypes": {
+      "CARNE": "Carne",
+      "VERDURA": "Verdura",
+      "PESCE": "Pesce"
     }
   }
 }

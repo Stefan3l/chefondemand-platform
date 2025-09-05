@@ -1,5 +1,6 @@
 // services/dishes.service.ts
 import { PrismaClient, Dish, DishCategory, Prisma } from "@prisma/client";
+import { FoodTypeApi } from "../validators/dishes.validator"; // Import corretto
 
 const prisma = new PrismaClient();
 
@@ -32,6 +33,7 @@ export async function createDish(input: {
   nomePiatto: string;
   categoria: DishCategory;
   descrizione?: string | null;
+  foodType: FoodTypeApi; // Usa i nuovi valori di FoodTypeApi
 }): Promise<Dish> {
   const nome = input.nomePiatto.trim();
   const descr: string | null = input.descrizione?.trim() || null;
@@ -42,6 +44,7 @@ export async function createDish(input: {
       nomePiatto: nome,
       categoria: input.categoria,
       descrizione: descr,
+      food_type: input.foodType, // Usa i nuovi valori di food_type
     },
   });
 }
@@ -56,6 +59,7 @@ export async function updateDish(input: {
   nomePiatto?: string;
   categoria?: DishCategory;
   descrizione?: string | null;
+  foodType?: FoodTypeApi; // Usa i nuovi valori di FoodTypeApi
 }): Promise<Dish | null> {
   // Verifica ownership (lo chef deve essere proprietario del piatto)
   const exists = await prisma.dish.findFirst({
@@ -75,6 +79,9 @@ export async function updateDish(input: {
   if (typeof input.descrizione !== "undefined") {
     const descr: string | null = input.descrizione?.trim() || null;
     data.descrizione = descr;
+  }
+  if (typeof input.foodType !== "undefined") {
+    data.food_type = input.foodType; // Usa i nuovi valori di food_type
   }
 
   return prisma.dish.update({

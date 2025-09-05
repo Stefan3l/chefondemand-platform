@@ -6,11 +6,13 @@ import { api } from "@/lib/axios";
 import { Button, Heading, Paragraph } from "@/components/ui";
 import { useMe } from "@/context/me";
 import { useTranslation } from "@/utils/useTranslation";
-import { Plus, Pencil, Trash2, X, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Loader2, Leaf, Flame, Snowflake } from "lucide-react";
 
 /* ───────────────────────── Tipi dominio ───────────────────────── */
 
 type DishCategory = "ANTIPASTO" | "PRIMO_PIATTO" | "PIATTO_PRINCIPALE" | "DESSERT" | "ALTRO";
+
+type FoodType = "CARNE" | "VERDURA" | "PESCE"; // Aggiornato con i nuovi valori
 
 type Dish = {
   id: string;
@@ -18,6 +20,7 @@ type Dish = {
   nomePiatto: string;
   categoria: DishCategory;
   descrizione: string | null;
+  foodType: FoodType | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -33,6 +36,12 @@ const CATEGORY_VALUES: DishCategory[] = [
   "DESSERT",
   "ALTRO",
 ];
+
+const FOOD_TYPE_DETAILS: Record<FoodType, { color: string; icon: React.ElementType }> = {
+  CARNE: { color: "text-red-500", icon: Flame },
+  VERDURA: { color: "text-green-500", icon: Leaf },
+  PESCE: { color: "text-blue-500", icon: Snowflake },
+};
 
 /* ───────────────── FancySelect: select custom stilizzabile ─────────────────
    - Serve per avere la lista delle opzioni con bg nero, testo #C7AE6A e bordo #C7AE6A33
@@ -210,6 +219,7 @@ export default function Piatti() {
         nomePiatto: string;
         categoria: DishCategory | "";
         descrizione: string;
+        foodType: FoodType | "";
         busy: boolean;
       };
   const [modal, setModal] = useState<ModalState>({ open: false });
@@ -274,6 +284,7 @@ export default function Piatti() {
       nomePiatto: "",
       categoria: "",
       descrizione: "",
+      foodType: "",
       busy: false,
     });
 
@@ -285,6 +296,7 @@ export default function Piatti() {
       nomePiatto: d.nomePiatto,
       categoria: d.categoria,
       descrizione: d.descrizione ?? "",
+      foodType: d.foodType ?? "",
       busy: false,
     });
 
@@ -295,16 +307,23 @@ export default function Piatti() {
     const nome = modal.nomePiatto.trim();
     const categoria = modal.categoria;
     const descrizione = modal.descrizione.trim();
+    const foodType = modal.foodType;
 
     if (!nome) return setError(T("errors.nameRequired"));
     if (!categoria) return setError(T("errors.categoryRequired"));
+    if (!foodType) return setError(T("errors.foodTypeRequired"));
 
     setModal((m) => (m.open ? { ...m, busy: true } : m));
     try {
       if (modal.mode === "create") {
         const res = await api.post<ApiOneResponse<Dish>>(
           `/api/chefs/${chefId}/dishes`,
-          { nomePiatto: nome, categoria, descrizione: descrizione || null },
+          {
+            nomePiatto: nome,
+            categoria,
+            descrizione: descrizione || null,
+            foodType, // Include il foodType nel payload
+          },
           { validateStatus: () => true }
         );
         if (res.status !== 201 || !res.data?.data) throw new Error(T("notifications.createFailed"));
@@ -312,7 +331,12 @@ export default function Piatti() {
       } else {
         const res = await api.patch<ApiOneResponse<Dish>>(
           `/api/chefs/${chefId}/dishes/${modal.dishId}`,
-          { nomePiatto: nome, categoria, descrizione: descrizione || null },
+          {
+            nomePiatto: nome,
+            categoria,
+            descrizione: descrizione || null,
+            foodType, // Include il foodType nel payload
+          },
           { validateStatus: () => true }
         );
         if (res.status !== 200 || !res.data?.data) throw new Error(T("notifications.updateFailed"));
@@ -365,67 +389,71 @@ export default function Piatti() {
     if (dishes.length === 0) return null;
 
     return (
-      <ul className="flex flex-wrap  gap-4">
-        {dishes.map((d) => (
-          <li
-            key={d.id}
-            className="             
-              overflow-hidden rounded-2xl border border-[#C7AE6A33] bg-neutral-900/50 px-6 py-8 w-full sm:w-auto
-              flex flex-col          
-              transform-gpu transition-[transform,border-color,box-shadow] duration-300 ease-out
-              hover:-translate-y-0.5 hover:border-[#C7AE6A] hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
-           
-          >
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-base md:text-lg font-semibold text-neutral-100 line-clamp-2 break-words">
-                {d.nomePiatto}
-              </h3>
-            </div>
+      <ul className="flex flex-wrap gap-4">
+        {dishes.map((d) => {
+          const foodTypeDetails = d.foodType ? FOOD_TYPE_DETAILS[d.foodType] : null;
+          return (
+            <li
+              key={d.id}
+              className="overflow-hidden rounded-2xl border border-[#C7AE6A33] bg-neutral-900/50 px-6 py-8 w-full sm:w-auto flex flex-col transform-gpu transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:border-[#C7AE6A] hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-base md:text-lg font-semibold text-neutral-100 line-clamp-2 break-words">
+                  {d.nomePiatto}
+                </h3>
+                {foodTypeDetails && (
+                  <div className={`flex items-center gap-1 ${foodTypeDetails.color}`}>
+                    <foodTypeDetails.icon className="w-5 h-5" />
+                    <span className="text-sm">{T(`foodTypes.${d.foodType}`)}</span>
+                  </div>
+                )}
+              </div>
 
-            <div className="my-2">
-              <span className="inline-block rounded-full bg-[#C7AE6A33] px-2 py-1 text-xs md:text-[13px] text-[#C7AE6A]">
-                {catLabel(d.categoria)}
-              </span>
-            </div>
-
-            {d.descrizione && (
-              <Paragraph
-                size="sm"
-                className="mt-3 text-neutral-300 line-clamp-4 break-words"
-              >
-                {d.descrizione}
-              </Paragraph>
-            )}
-
-            <hr className="border-t border-[#C7AE6A33] my-4" />
-
-            {/* Azioni fissate in basso: mt-auto spinge il blocco a fondo card */}
-            <div className="mt-auto flex items-center justify-between gap-3">
-              <Button
-                size="md"
-                variant="secondary"
-                className="h-9 px-3 inline-flex items-center gap-2 rounded-lg"
-                onClick={() => openEdit(d)}
-              >
-                <span className="flex items-center gap-2">
-                  <Pencil className="h-4 w-4" />
-                  {T("buttons.edit")}
+              <div className="my-2">
+                <span className="inline-block rounded-full bg-[#C7AE6A33] px-2 py-1 text-xs md:text-[13px] text-[#C7AE6A]">
+                  {catLabel(d.categoria)}
                 </span>
-              </Button>
-              <Button
-                size="md"
-                variant="secondary"
-                className="h-9 px-3 inline-flex items-center gap-2 rounded-lg hover:text-red-400 hover:border-red-400"
-                onClick={() => askDelete(d.id)}
-              >
-                <span className="flex items-center gap-2">
-                  <Trash2 className="h-4 w-4" />
-                  {T("buttons.delete")}
-                </span>
-              </Button>
-            </div>
-          </li>
-        ))}
+              </div>
+
+              {d.descrizione && (
+                <Paragraph
+                  size="sm"
+                  className="mt-3 text-neutral-300 line-clamp-4 break-words"
+                >
+                  {d.descrizione}
+                </Paragraph>
+              )}
+
+              <hr className="border-t border-[#C7AE6A33] my-4" />
+
+              {/* Azioni fissate in basso: mt-auto spinge il blocco a fondo card */}
+              <div className="mt-auto flex items-center justify-between gap-3">
+                <Button
+                  size="md"
+                  variant="secondary"
+                  className="h-9 px-3 inline-flex items-center gap-2 rounded-lg"
+                  onClick={() => openEdit(d)}
+                >
+                  <span className="flex items-center gap-2">
+                    <Pencil className="h-4 w-4" />
+                    {T("buttons.edit")}
+                  </span>
+                </Button>
+                <Button
+                  size="md"
+                  variant="secondary"
+                  className="h-9 px-3 inline-flex items-center gap-2 rounded-lg hover:text-red-400 hover:border-red-400"
+                  onClick={() => askDelete(d.id)}
+                >
+                  <span className="flex items-center gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    {T("buttons.delete")}
+                  </span>
+                </Button>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     );
   }, [dishes, catLabel, T, showLoadingInGrid, hasLoadedOnce]);
@@ -450,6 +478,17 @@ export default function Piatti() {
       ...CATEGORY_VALUES.map((c) => ({ value: c as ModalCatValue, label: catLabel(c) })),
     ],
     [T, catLabel]
+  );
+
+  // Opzioni pentru foodType select (include placeholder)
+  const modalFoodTypeOptions: Option<FoodType | typeof PLH>[] = useMemo(
+    () => [
+      { value: PLH, label: T("fields.foodType.placeholder") },
+      { value: "CARNE", label: T("fields.foodType.carne") },
+      { value: "VERDURA", label: T("fields.foodType.verdura") },
+      { value: "PESCE", label: T("fields.foodType.pesce") },
+    ],
+    [T]
   );
 
   return (
@@ -583,6 +622,22 @@ export default function Piatti() {
                   rows={4}
                   className="mt-2 w-full rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-neutral-100 placeholder-neutral-500 outline-none focus:border-[#C7AE6A33] focus:ring-1 focus:ring-[#C7AE6A33]"
                 />
+              </label>
+
+              <label className="text-sm">
+                {T("fields.foodType.label")}
+                <div className="mt-2">
+                  <FancySelect<FoodType | typeof PLH>
+                    value={(modal.foodType || "__PLH__") as FoodType | typeof PLH}
+                    onChange={(v) =>
+                      setModal((m) =>
+                        m.open ? { ...m, foodType: v === "__PLH__" ? "" : (v as FoodType) } : m
+                      )
+                    }
+                    options={modalFoodTypeOptions}
+                    aria-label={T("fields.foodType.label")}
+                  />
+                </div>
               </label>
             </div>
 

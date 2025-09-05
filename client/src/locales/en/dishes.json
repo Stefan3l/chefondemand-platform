@@ -38,6 +38,13 @@
       "description": {
         "label": "Description",
         "placeholder": "Describe the main ingredients and/or preparation…"
+      },
+      "foodType": {
+        "label": "Food type",
+        "placeholder": "Select a food type",
+        "carne": "Meat (e.g., chicken, beef, pork)",
+        "verdura": "Vegetable (e.g., salad, spinach, zucchini)",
+        "pesce": "Fish (e.g., salmon, tuna, shrimp)"
       }
     },
     "deleteDialog": {
@@ -56,7 +63,8 @@
     },
     "errors": {
       "nameRequired": "Dish name is required.",
-      "categoryRequired": "Please select a dish category."
+      "categoryRequired": "Please select a dish category.",
+      "foodTypeRequired": "Please select a food type."
     },
     "categories": {
       "ANTIPASTO": "Appetizer",
@@ -64,6 +72,11 @@
       "PIATTO_PRINCIPALE": "Main Course",
       "DESSERT": "Dessert",
       "ALTRO": "Other"
+    },
+    "foodTypes": {
+      "CARNE": "Meat",
+      "VERDURA": "Vegetable",
+      "PESCE": "Fish"
     }
   }
 }

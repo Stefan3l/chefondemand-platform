@@ -37,6 +37,7 @@ const toApiDish = (d: any) => ({
   descrizione: d.descrizione ?? null,
   createdAt: d.createdAt,
   updatedAt: d.updatedAt,
+  foodType: d.food_type ?? null, // Usa il campo food_type corretto
 });
 
 // GET /api/chefs/:chefId/dishes?category=...&limit=...
@@ -73,6 +74,7 @@ export const postDish = asyncHandler(async (req, res) => {
     nomePiatto: body.nomePiatto,
     categoria: body.categoria as DishCategory,
     descrizione: body.descrizione ?? null,
+    foodType: body.foodType, // Passa il foodType al servizio
   });
 
   res.status(201).json({ ok: true, data: toApiDish(created) });
@@ -90,6 +92,7 @@ export const patchDish = asyncHandler(async (req, res) => {
     nomePiatto: body.nomePiatto,
     categoria: body.categoria as DishCategory | undefined,
     descrizione: body.descrizione ?? undefined,
+    foodType: body.foodType, // Passa il foodType al servizio
   });
 
   if (!updated) {

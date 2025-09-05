@@ -12,6 +12,11 @@ export const DISH_CATEGORIES = [
 
 export type DishCategoryApi = typeof DISH_CATEGORIES[number];
 
+// Valori canonici per l'enum foodType usati nell'API/DB
+export const FOOD_TYPES = ["CARNE", "VERDURA", "PESCE"] as const;
+
+export type FoodTypeApi = typeof FOOD_TYPES[number];
+
 // Parametri path: :chefId
 export const chefIdParamSchema = z.object({
   chefId: z.string().min(1, "chefId mancante"),
@@ -33,6 +38,7 @@ export const createDishBodySchema = z.object({
   nomePiatto: z.string().min(1).max(120),
   categoria: z.enum(DISH_CATEGORIES),
   descrizione: z.string().max(500).nullish(),
+  foodType: z.enum(FOOD_TYPES), // Aggiunto foodType come campo obbligatorio
 });
 
 // Corpo richiesta per UPDATE (tutti opzionali)
@@ -40,4 +46,5 @@ export const updateDishBodySchema = z.object({
   nomePiatto: z.string().min(1).max(120).optional(),
   categoria: z.enum(DISH_CATEGORIES).optional(),
   descrizione: z.string().max(500).nullish().optional(),
+  foodType: z.enum(FOOD_TYPES).optional(), // Aggiunto foodType come campo opzionale
 });
