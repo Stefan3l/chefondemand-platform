@@ -100,6 +100,7 @@ model ChefProfile {
   region          String? @db.VarChar(100)
   country         String? @db.Char(2)
   serviceRadiusKm Int?
+  serviceMultiDay Boolean @default(false) // 👈 obbligatorio, mai null
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

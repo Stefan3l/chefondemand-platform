@@ -29,6 +29,7 @@ export const chefProfilePatchSchema = z.object({
   region: z.string().trim().max(80).optional().nullable(),
   country: z.string().trim().toUpperCase().length(2, "ISO-2 (es. IT, BE)").optional(),
   serviceRadiusKm: z.number().int().min(0).max(500).optional(),
+  serviceMultiDay: z.boolean().optional().nullable(),
 }).strict();
 
 export type ChefProfilePatchInput = z.infer<typeof chefProfilePatchSchema>;

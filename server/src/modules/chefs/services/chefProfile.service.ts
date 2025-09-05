@@ -55,6 +55,7 @@ export async function updatePartialByChefId(chefId: string, patch: ChefProfilePa
   if (has(patch, "region")) data.region = patch.region ?? null;
   if (has(patch, "country")) data.country = patch.country ?? null;
   if (has(patch, "serviceRadiusKm")) data.serviceRadiusKm = patch.serviceRadiusKm ?? null;
+  if (has(patch, "serviceMultiDay")) (data as any).serviceMultiDay = patch.serviceMultiDay ?? null;
 
   return prisma.chefProfile.upsert({
     where: { chefId },

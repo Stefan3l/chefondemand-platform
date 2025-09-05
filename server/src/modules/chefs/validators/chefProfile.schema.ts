@@ -30,6 +30,7 @@ export const chefProfileSchema = z.object({
   region: z.string().optional(),
   country: z.string().length(2, "Il paese deve essere ISO-2 (es. IT, BE)").optional(),
   serviceRadiusKm: z.number().int().positive("Il raggio deve essere un intero positivo").optional(),
+  serviceMultiDay: z.boolean().optional(), // 👈 nuovo campo
 });
 
 export type ChefProfileInput = z.infer<typeof chefProfileSchema>;
